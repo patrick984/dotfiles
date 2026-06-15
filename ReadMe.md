@@ -41,6 +41,7 @@ they are unavailable:
 - `git`
 - `rg`
 - `fzf`
+- `bat` or `batcat`
 - `direnv`
 - `zoxide`
 - `nvim`
