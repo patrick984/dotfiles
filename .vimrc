@@ -4,7 +4,16 @@
 set nocompatible
 set background=light
 syntax on
-colorscheme light_custom
+let s:vimrc_dir = expand('<sfile>:p:h')
+if filereadable(s:vimrc_dir . '/.vim/colors/light_custom.vim')
+    execute 'set runtimepath^=' . fnameescape(s:vimrc_dir . '/.vim')
+endif
+
+try
+    colorscheme light_custom
+catch /^Vim\%((\a\+)\)\=:E185/
+    echo 'light_custom colorscheme unavailable; using Vim default'
+endtry
 
 let mapleader = " "
 
@@ -133,8 +142,9 @@ function! BetterAutosave()
         silent update
         " Short visual confirmation in the message area
         echo "Saved: " . expand('%:t')
-        " Clear the message after 2 seconds so it doesn't linger
-        defer timer_start(2000, {-> execute('echo ""')})
+        if exists('*timer_start')
+            call timer_start(2000, {-> execute('echo ""')})
+        endif
     endif
 endfunction
 
@@ -153,29 +163,65 @@ vnoremap <C-S-Down> :m '>+1<CR>gv=gv
 
 nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
 
-nnoremap <leader>e <cmd>Explore<CR>
-nnoremap <leader>` <cmd>bel term<CR>
-nnoremap <leader>b :ls<CR>:b 
-nnoremap <leader>g <cmd>Rg<CR>
-nnoremap <leader>f <cmd>FZF<CR>
-nnoremap <C-p> <cmd>Files<CR>
+nnoremap <leader>e :Explore<CR>
+nnoremap <leader>` :bel term<CR>
+nnoremap <leader>b :ls<CR>:b
+nnoremap <leader>g :call ProjectGrep()<CR>
+nnoremap <leader>f :call FindFile()<CR>
+nnoremap <C-p> :call FindFile()<CR>
 
-nnoremap <leader>m <cmd>make<CR>
-nnoremap <leader>r <cmd>!./%<<CR>
+nnoremap <leader>m :make<CR>
+nnoremap <leader>r :!./%<<CR>
 
 " Quickfix
-nnoremap <leader>n <cmd>cnext<CR>
-nnoremap <leader>N <cmd>cprev<CR>
-nnoremap <leader>q <cmd>copen<CR>
-nnoremap <leader>c <cmd>cclose<CR>
+nnoremap <leader>n :cnext<CR>
+nnoremap <leader>N :cprev<CR>
+nnoremap <leader>q :copen<CR>
+nnoremap <leader>c :cclose<CR>
 
 " Tags
 nnoremap <leader>jd <C-]>
 nnoremap <leader>jb <C-t>
 
 "=========================================================
-" ALE
+" Optional plugin helpers
 "=========================================================
+function! FindFile()
+    if exists(':Files') == 2
+        Files
+    elseif exists(':FZF') == 2
+        FZF
+    else
+        find
+    endif
+endfunction
+
+function! ProjectGrep()
+    if exists(':Rg') == 2
+        Rg
+    elseif executable('rg')
+        let l:pattern = input('rg: ')
+        if !empty(l:pattern)
+            execute 'grep! ' . shellescape(l:pattern)
+            copen
+        endif
+    else
+        let l:pattern = input('grep: ')
+        if !empty(l:pattern)
+            execute 'vimgrep /' . escape(l:pattern, '/\') . '/gj **/*'
+            copen
+        endif
+    endif
+endfunction
+
+function! OptionalCommand(command)
+    if exists(':' . a:command) == 2
+        execute a:command
+    else
+        echo a:command . ' is unavailable'
+    endif
+endfunction
+
 let g:ale_completion_enabled = 1
 let g:ale_completion_auto_popup = 1
 let g:ale_completion_delay = 100
@@ -192,6 +238,11 @@ let g:ale_set_highlights = 0
 let g:ale_virtualtext_cursor = 'disabled'
 
 function! ToggleALEVisibility()
+    if exists(':ALEEnableBuffer') != 2
+        echo 'ALE is unavailable'
+        return
+    endif
+
     let g:ale_visible = !get(g:, 'ale_visible', 0)
 
     if g:ale_visible
@@ -209,14 +260,15 @@ function! ToggleALEVisibility()
 endfunction
 
 nnoremap <leader>a :call ToggleALEVisibility()<CR>
-nnoremap <leader>d :ALEDetail<CR>
+nnoremap <leader>d :call OptionalCommand('ALEDetail')<CR>
 nnoremap <leader>l :lopen<CR>
 
-nnoremap <S-k> <cmd>ALEHover<CR>
-nnoremap <leader>gd <cmd>ALEGoToDefinition<CR>
-nnoremap <leader>gi <cmd>ALEGoToImplementation<CR>
-nnoremap <leader>gr <cmd>ALEFindReferences<CR>
-nnoremap <leader>ca <cmd>ALECodeAction<CR>
+nnoremap <S-k> :call OptionalCommand('ALEHover')<CR>
+nnoremap <leader>gd :call OptionalCommand('ALEGoToDefinition')<CR>
+nnoremap <leader>gi :call OptionalCommand('ALEGoToImplementation')<CR>
+nnoremap <leader>gr :call OptionalCommand('ALEFindReferences')<CR>
+nnoremap <leader>ca :call OptionalCommand('ALECodeAction')<CR>
+nnoremap <leader>gs :call OptionalCommand('Git')<CR>
 
 "=========================================================
 " Plugins
@@ -233,4 +285,3 @@ nnoremap <leader>ca <cmd>ALECodeAction<CR>
 "Plug 'tpope/vim-fugitive'
 
 "call plug#end()
-

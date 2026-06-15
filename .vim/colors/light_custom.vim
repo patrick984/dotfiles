@@ -1,16 +1,14 @@
-vim9script
-
-# Clear existing highlights
+" Clear existing highlights
 highlight clear
 if exists("syntax_on")
   syntax reset
 endif
 
-g:colors_name = "light_custom"
+let g:colors_name = "light_custom"
 
-# =========================
-# Base UI
-# =========================
+" =========================
+" Base UI
+" =========================
 set background=light
 
 highlight Title         guifg=#7c3c00 guibg=NONE    gui=bold   ctermfg=94   ctermbg=NONE cterm=bold
@@ -48,16 +46,16 @@ highlight ColorColumn   guibg=#eeeeee ctermbg=255
 highlight ErrorMsg      guibg=#bb5d5d ctermbg=131
 highlight WarningMsg    guifg=#99884c ctermfg=101
 
-# =========================
-# Diff / Git gutter
-# =========================
+" =========================
+" Diff / Git gutter
+" =========================
 highlight DiffAdd       guifg=#ffffff guibg=#558855 gui=NONE   ctermfg=231  ctermbg=65   cterm=NONE
 highlight DiffChange    guifg=#ffffff guibg=#4670bb gui=NONE   ctermfg=231  ctermbg=61   cterm=NONE
 highlight DiffDelete    guifg=#ffffff guibg=#bb5d5d gui=NONE   ctermfg=231  ctermbg=131  cterm=NONE
 
-# =========================
-# Syntax
-# =========================
+" =========================
+" Syntax
+" =========================
 highlight Comment       guifg=#6b7ca8 guibg=NONE    gui=italic ctermfg=67   ctermbg=NONE cterm=italic
 highlight String        guifg=#067200 guibg=NONE    gui=NONE   ctermfg=22   ctermbg=NONE cterm=NONE
 highlight Character     guifg=#067200 guibg=NONE    gui=NONE   ctermfg=22   ctermbg=NONE cterm=NONE
@@ -83,11 +81,10 @@ highlight Define        guifg=#7c3c00 guibg=NONE    gui=NONE   ctermfg=94   cter
 highlight Constant      guifg=#7c3c00 guibg=NONE    gui=NONE   ctermfg=94   ctermbg=NONE cterm=NONE
 highlight Special       guifg=#7c3c00 guibg=NONE    gui=NONE   ctermfg=94   ctermbg=NONE cterm=NONE
 
-# =========================
-# Misc
-# =========================
+" =========================
+" Misc
+" =========================
 highlight Todo          guifg=#d27400 guibg=#f6f8fa gui=bold   ctermfg=172  ctermbg=231  cterm=bold
 highlight NonText       guifg=#000000 ctermfg=16
 highlight SpecialKey    guifg=#000000 ctermfg=16
-
 

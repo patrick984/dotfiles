@@ -1,0 +1,66 @@
+# Shared interactive shell settings for bash and zsh.
+
+export EDITOR="${EDITOR:-nvim}"
+export VISUAL="${VISUAL:-$EDITOR}"
+export PAGER="${PAGER:-less}"
+export LESS="${LESS:--FRX}"
+export ODIN_ROOT="${ODIN_ROOT:-$HOME/src/Odin}"
+
+path_prepend() {
+    case ":$PATH:" in
+        *":$1:"*) ;;
+        *) [ -d "$1" ] && PATH="$1:$PATH" ;;
+    esac
+}
+
+path_append() {
+    case ":$PATH:" in
+        *":$1:"*) ;;
+        *) [ -d "$1" ] && PATH="$PATH:$1" ;;
+    esac
+}
+
+path_prepend "$HOME/.local/bin"
+path_prepend "$HOME/bin"
+path_append "$HOME/go/bin"
+export PATH
+
+[ -r "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
+
+if command -v nvim >/dev/null 2>&1; then
+    alias vim='nvim'
+fi
+
+if ls --color=auto >/dev/null 2>&1; then
+    alias ls='ls --color=auto'
+elif ls -G >/dev/null 2>&1; then
+    alias ls='ls -G'
+fi
+
+alias ll='ls -lh'
+alias la='ls -A'
+alias lla='ls -lAh'
+if grep --color=auto '' /dev/null >/dev/null 2>&1; then
+    alias grep='grep --color=auto'
+fi
+alias ..='cd ..'
+alias ...='cd ../..'
+alias gst='git status --short'
+alias gl='git log --oneline --decorate --graph -20'
+alias gd='git diff'
+
+mkcd() {
+    mkdir -p "$1" && cd "$1" || return
+}
+
+if command -v rg >/dev/null 2>&1; then
+    export RIPGREP_CONFIG_PATH="${RIPGREP_CONFIG_PATH:-$HOME/.ripgreprc}"
+fi
+
+if command -v direnv >/dev/null 2>&1; then
+    eval "$(direnv hook "${ZSH_VERSION:+zsh}${BASH_VERSION:+bash}")"
+fi
+
+if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init "${ZSH_VERSION:+zsh}${BASH_VERSION:+bash}")"
+fi
