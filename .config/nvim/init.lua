@@ -321,7 +321,16 @@ vim.api.nvim_create_autocmd({ "ModeChanged" }, {
 -- 4. LSP Configuration 
 -- ========================================================================== --
 vim.lsp.config("*", {
-    root_markers = { ".git", "Cargo.toml", "package.json", ".sln" },
+    root_markers = {
+        ".git",
+        "Cargo.toml",
+        "go.mod",
+        "package.json",
+        "pyproject.toml",
+        "compile_commands.json",
+        "*.sln",
+        "*.csproj",
+    },
 })
 
 vim.diagnostic.config({
@@ -333,6 +342,14 @@ vim.diagnostic.config({
 })
 
 local format_sync_group = vim.api.nvim_create_augroup("LspFormatOnSave", { clear = true })
+
+-- Formatting is opt-in per language. Add a filetype here when you want it.
+local format_on_save_filetypes = {
+    -- python = true,
+    -- go = true,
+    -- rust = true,
+    -- typescript = true,
+}
 
 -- Handle bindings natively on file capture
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -360,7 +377,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
                 vim.lsp.buf.format({ bufnr = bufnr, async = true })
         end, { buffer = bufnr, desc = "Format Document (Manual)" })
 
-        if client:supports_method("textDocument/formatting") then        
+        if format_on_save_filetypes[vim.bo[bufnr].filetype]
+            and client:supports_method("textDocument/formatting") then
             vim.api.nvim_clear_autocmds({ group = format_sync_group, buffer = bufnr })
             vim.api.nvim_create_autocmd("BufWritePre", {
                 group = format_sync_group,
@@ -386,9 +404,18 @@ vim.keymap.set("n", "<leader>th", function()
     print("Inlay hints: " .. (not is_enabled and "ON" or "OFF"))
 end, { desc = "Toggle Inlay Hints" })
 
--- Define Server Launch Properties Statically In-Line
-vim.lsp.config("pyright", {
-    cmd = { "pyright-langserver", "--standardio" },
+local function enable_lsp_if_available(name, executable, config)
+    if vim.fn.executable(executable) ~= 1 then
+        return
+    end
+
+    vim.lsp.config(name, config)
+    vim.lsp.enable(name)
+end
+
+-- Define server launch properties statically and enable only installed servers.
+enable_lsp_if_available("pyright", "pyright-langserver", {
+    cmd = { "pyright-langserver", "--stdio" },
     filetypes = { "python" },
     settings = {
         python = {
@@ -402,7 +429,7 @@ vim.lsp.config("pyright", {
     },
 })
 
-vim.lsp.config("vtsls", {
+enable_lsp_if_available("vtsls", "vtsls", {
     cmd = { "vtsls", "--stdio" },
     filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
     settings = {
@@ -429,17 +456,17 @@ vim.lsp.config("vtsls", {
     },
 })
 
-vim.lsp.config("ols", {
+enable_lsp_if_available("ols", "ols", {
     cmd = { "ols" },
     filetypes = { "odin" },
 })
 
-vim.lsp.config("clangd", {
+enable_lsp_if_available("clangd", "clangd", {
     cmd = { "clangd" },
     filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
 })
 
-vim.lsp.config("rust_analyzer", {
+enable_lsp_if_available("rust_analyzer", "rust-analyzer", {
     cmd = { "rust-analyzer" },
     filetypes = { "rust" },
     settings = {
@@ -455,44 +482,34 @@ vim.lsp.config("rust_analyzer", {
     },
 })
 
-vim.lsp.config("omnisharp", {
-    cmd = { "omnisharp" },
-    filetypes = { "cs" },
+enable_lsp_if_available("gopls", "gopls", {
+    cmd = { "gopls" },
+    filetypes = { "go", "gomod", "gowork", "gotmpl" },
+})
+
+enable_lsp_if_available("html", "vscode-html-language-server", {
+    cmd = { "vscode-html-language-server", "--stdio" },
+    filetypes = { "html" },
+})
+
+enable_lsp_if_available("cssls", "vscode-css-language-server", {
+    cmd = { "vscode-css-language-server", "--stdio" },
+    filetypes = { "css", "scss", "less" },
+})
+
+enable_lsp_if_available("jsonls", "vscode-json-language-server", {
+    cmd = { "vscode-json-language-server", "--stdio" },
+    filetypes = { "json", "jsonc" },
+})
+
+enable_lsp_if_available("roslyn", "roslyn-language-server", {
+    cmd = { "roslyn-language-server", "--stdio" },
+    filetypes = { "cs", "razor" },
+    root_markers = { "*.sln", "*.csproj", ".git" },
     settings = {
-        csharp = {
-            inlayHints = {
-                enableInlayHintsForImplicitObjectCreation = true,
-                enableInlayHintsForIndexerParameters = true,
-                enableInlayHintsForLambdaParameterTypes = true,
-                enableInlayHintsForLiteralParameters = true,
-                enableInlayHintsForObjectCreationParameters = true,
-                enableInlayHintsForOtherParameters = true,
-                enableInlayHintsForParameterNames = true,
-                enableInlayHintsForTypes = true,
-            },
+        ["csharp|inlay_hints"] = {
+            csharp_enable_inlay_hints_for_implicit_object_creation = true,
+            csharp_enable_inlay_hints_for_implicit_variable_types = true,
         },
     },
 })
-
-vim.lsp.config("roslyn", {
-  cmd = { "roslyn-language-server", "--stdio" },
-  filetypes = { "cs", "razor" },
-  root_markers = { "*.sln", "*.csproj", ".git" },
-  -- Optional: customize Roslyn specific parameters or settings
-  settings = {
-    ["csharp|inlay_hints"] = {
-      csharp_enable_inlay_hints_for_implicit_object_creation = true,
-      csharp_enable_inlay_hints_for_implicit_variable_types = true,
-    },
-  },
-})
-
--- Fire off and auto-activate all configured environments globally
-vim.lsp.enable("vtsls")
-vim.lsp.enable("ols")
-vim.lsp.enable("pyright")
-vim.lsp.enable("clangd")
-vim.lsp.enable("rust_analyzer")
--- vim.lsp.enable("omnisharp")
-vim.lsp.enable("roslyn")
-
