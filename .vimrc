@@ -1,6 +1,10 @@
 "=========================================================
 " Core
 "=========================================================
+" vim.tiny lacks +eval, which normal Vimscript configuration requires.
+" Keep tiny usable by skipping this config instead of emitting E319 errors.
+silent! if has("eval")
+
 set nocompatible
 set background=light
 syntax on
@@ -285,3 +289,5 @@ nnoremap <leader>gs :call OptionalCommand('Git')<CR>
 "Plug 'tpope/vim-fugitive'
 
 "call plug#end()
+
+endif

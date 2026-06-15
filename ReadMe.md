@@ -14,7 +14,8 @@ development containers.
 
 ## Supported Versions
 
-- Vim 9+ with `+eval` support; `vim.tiny` is not supported
+- Vim 9+ with `+eval` support for the full config; `vim.tiny` starts without
+  loading the full Vim configuration
 - Neovim 0.12+
 - tmux 3.2+
 - Bash 4+ where possible
