@@ -42,7 +42,7 @@ __git_prompt_segment() {
     color='\[\033[01;32m\]'
     while IFS= read -r line; do
         [ -z "$line" ] && continue
-        color='\[\033[01;33m\]'
+        color='\[\033[38;5;130m\]'
         case "$line" in
             DD*|AU*|UD*|UA*|DU*|AA*|UU*)
                 color='\[\033[01;31m\]'
