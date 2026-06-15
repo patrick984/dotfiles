@@ -19,10 +19,41 @@ if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
-__git_branch() {
+__git_prompt_segment() {
+    __git_segment=''
     command -v git >/dev/null 2>&1 || return
-    git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
-    git branch --show-current 2>/dev/null | sed 's/^/ git:/'
+
+    local status first rest branch color line
+    status="$(git status --porcelain=v1 --branch 2>/dev/null)" || return
+    first="${status%%$'\n'*}"
+    rest="${status#"$first"}"
+    branch="${first#'## '}"
+    branch="${branch%%...*}"
+    branch="${branch%% \[*}"
+
+    if [ "$branch" = "HEAD (no branch)" ] || [ -z "$branch" ]; then
+        branch="$(git rev-parse --short HEAD 2>/dev/null)" || return
+    fi
+
+    branch="${branch//\\/\\\\}"
+    branch="${branch//\$/\\$}"
+    branch="${branch//\`/\\\`}"
+
+    color='\[\033[01;32m\]'
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        color='\[\033[01;33m\]'
+        case "$line" in
+            DD*|AU*|UD*|UA*|DU*|AA*|UU*)
+                color='\[\033[01;31m\]'
+                break
+                ;;
+        esac
+    done <<EOF
+$rest
+EOF
+
+    __git_segment=" ${color}${branch}\[\033[00m\]"
 }
 
 if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ]; then
@@ -31,14 +62,23 @@ else
     __host=''
 fi
 
-PS1='${debian_chroot:+($debian_chroot)}'"$__host"'\[\033[01;34m\]\w\[\033[00m\]\[\033[01;34m\]$(__git_branch)\[\033[00m\] \$ '
-unset __host
+__set_prompt() {
+    local last_status=$?
+    local title=''
 
-case "$TERM" in
-    xterm*|rxvt*)
-        PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-        ;;
-esac
+    __git_prompt_segment
+
+    case "$TERM" in
+        xterm*|rxvt*)
+            title='\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]'
+            ;;
+    esac
+
+    PS1="${title}"'${debian_chroot:+($debian_chroot)}'"$__host"'\[\033[01;34m\]\w\[\033[00m\]'"$__git_segment"' \$ '
+    return "$last_status"
+}
+
+PROMPT_COMMAND=__set_prompt
 
 if ! shopt -oq posix; then
     if [ -r /usr/share/bash-completion/bash_completion ]; then
