@@ -22,6 +22,8 @@
 
 2. Avoid 3rd party plugins - i.e. use builtin LSP support.
 
+3. Aim to provide a minimal, yet full featured development environment with language support for: C, C++, Python, C#, Go, Rust, TypeScript/Javascript, HTML/CSS and Odin.
+
 3. (optional) Vim-Fugitive plugin for git support.
 
 ### Vim
