@@ -54,6 +54,10 @@ mkcd() {
 }
 
 if command -v rg >/dev/null 2>&1; then
+    if [ -n "${RIPGREP_CONFIG_PATH:-}" ] && [ ! -r "$RIPGREP_CONFIG_PATH" ]; then
+        unset RIPGREP_CONFIG_PATH
+    fi
+
     if [ -z "${RIPGREP_CONFIG_PATH:-}" ] && [ -r "$HOME/.ripgreprc" ]; then
         export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
     fi
