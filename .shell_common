@@ -68,6 +68,23 @@ elif command -v batcat >/dev/null 2>&1; then
     alias bat='batcat'
 fi
 
+if [ -z "${LS_COLORS:-}" ]; then
+    export LS_COLORS="di=34:ln=35:so=36:pi=33:ex=32:bd=33:cd=33:su=31:sg=31:tw=34:ow=34:*.tar=31:*.tgz=31:*.zip=31:*.gz=31:*.xz=31:*.bz2=31:*.7z=31:*.rar=31:*.jpg=35:*.jpeg=35:*.png=35:*.gif=35:*.webp=35:*.svg=35:*.mp3=36:*.flac=36:*.ogg=36:*.mp4=36:*.mkv=36:*.mov=36"
+fi
+
+if ! command -v fd >/dev/null 2>&1 && command -v fdfind >/dev/null 2>&1; then
+    alias fd='fdfind'
+fi
+
+if command -v fzf >/dev/null 2>&1; then
+    fzf_light_opts="--color=light,fg:#202020,bg:#fffff5,hl:#0050ff,fg+:#000000,bg+:#eaffea,hl+:#7b0080,prompt:#006974,pointer:#7b0080,marker:#558855,spinner:#7c3c00,header:#6b7ca8,border:#558855,gutter:#fffff5,info:#7c3c00"
+    case " ${FZF_DEFAULT_OPTS:-} " in
+        *" $fzf_light_opts "*) ;;
+        *) export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }$fzf_light_opts" ;;
+    esac
+    unset fzf_light_opts
+fi
+
 if command -v direnv >/dev/null 2>&1; then
     eval "$(direnv hook "${ZSH_VERSION:+zsh}${BASH_VERSION:+bash}")"
 fi

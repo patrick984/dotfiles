@@ -42,6 +42,7 @@ they are unavailable:
 - `rg`
 - `fzf`
 - `bat` or `batcat`
+- `fd` or `fdfind`
 - `direnv`
 - `zoxide`
 - `nvim`
