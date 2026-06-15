@@ -29,12 +29,37 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 autoload -Uz compinit
 compinit -C
 
-autoload -Uz vcs_info
-zstyle ':vcs_info:git:*' formats ' %F{4}git:%b%f'
-zstyle ':vcs_info:git:*' actionformats ' %F{4}git:%b|%a%f'
+git_prompt_segment=''
 
 precmd() {
-    vcs_info
+    git_prompt_segment=''
+    command -v git >/dev/null 2>&1 || return
+
+    local git_status first rest branch color line
+    git_status="$(git status --porcelain=v1 --branch 2>/dev/null)" || return
+    first="${git_status%%$'\n'*}"
+    rest="${git_status#"$first"}"
+    branch="${first#'## '}"
+    branch="${branch%%...*}"
+    branch="${branch%% \[*}"
+
+    if [[ "$branch" == "HEAD (no branch)" || -z "$branch" ]]; then
+        branch="$(git rev-parse --short HEAD 2>/dev/null)" || return
+    fi
+
+    color='%F{2}'
+    while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        color='%F{3}'
+        case "$line" in
+            DD*|AU*|UD*|UA*|DU*|AA*|UU*)
+                color='%F{1}'
+                break
+                ;;
+        esac
+    done <<< "$rest"
+
+    git_prompt_segment=" ${color}${branch}%f"
 }
 
 if [[ -n "$SSH_CONNECTION" || -n "$SSH_CLIENT" ]]; then
@@ -43,7 +68,7 @@ else
     host_segment=''
 fi
 
-PROMPT='${host_segment}%F{4}%~%f${vcs_info_msg_0_} %# '
+PROMPT='${host_segment}%F{4}%~%f${git_prompt_segment} %# '
 
 bindkey -e
 bindkey '^[[A' up-line-or-search
