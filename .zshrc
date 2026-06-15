@@ -50,7 +50,7 @@ precmd() {
     color='%F{2}'
     while IFS= read -r line; do
         [[ -z "$line" ]] && continue
-        color='%F{3}'
+        color='%F{130}'
         case "$line" in
             DD*|AU*|UD*|UA*|DU*|AA*|UU*)
                 color='%F{1}'
