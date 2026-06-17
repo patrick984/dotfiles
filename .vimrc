@@ -26,7 +26,7 @@ let c_functions = 1
 set wildignore+=*.o,*.obj,*.a,*.so,*.dylib,*.class
 set wildignore+=*.pyc,*.pyo,*.gem,*.egg
 set wildignore+=*.zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz
-set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
+set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store,*/.cache/*
 set wildignore+=*/node_modules/*,*/bower_components/*
 set wildignore+=*.swp,*.swo,*.tmp,*~,*.un~
 
@@ -392,8 +392,6 @@ function! FindFile()
         Files
     elseif exists(':FZF') == 2
         FZF
-    else
-        find
     endif
 endfunction
 
