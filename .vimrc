@@ -422,11 +422,6 @@ function! OptionalCommand(command)
     endif
 endfunction
 
-nnoremap <S-k> :call OptionalCommand('ALEHover')<CR>
-nnoremap <leader>gd :call OptionalCommand('ALEGoToDefinition')<CR>
-nnoremap <leader>gi :call OptionalCommand('ALEGoToImplementation')<CR>
-nnoremap <leader>gr :call OptionalCommand('ALEFindReferences')<CR>
-nnoremap <leader>ca :call OptionalCommand('ALECodeAction')<CR>
 nnoremap <leader>gs :call OptionalCommand('Git')<CR>
 
 "=========================================================
