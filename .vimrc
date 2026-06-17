@@ -333,7 +333,18 @@ let lspOpts = #{
 autocmd User LspSetup call LspOptionsSet(lspOpts)
 
 let csharp_bin = exepath(expand('~/.dotnet/tools/roslyn-language-server'))
-let rustanalyzer_bin = exepath(expand('~/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rust-analyzer'))
+if has('macunix')
+    let rustanalyzer_bin = exepath(expand('~/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rust-analyzer'))
+elseif has('unix')
+    " Check if the processor architecture is ARM
+    if system('uname -m') =~# 'aarch64\|arm'
+        let rustanalyzer_bin = exepath(expand('~/.rustup/toolchains/stable-aarch64-unknown-linux-gnu/bin/rust-analyzer'))
+    else
+        let rustanalyzer_bin = exepath(expand('~/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rust-analyzer'))
+    endif
+else
+    let rustanalyzer_bin = exepath('rust-analyzer')
+endif
 
 let lspServers = [#{
       \ name: 'clangd',
