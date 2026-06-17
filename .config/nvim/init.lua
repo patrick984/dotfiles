@@ -15,9 +15,14 @@ vim.opt.signcolumn = "yes"
 vim.opt.clipboard = "unnamedplus"
 vim.opt.wrap = true
 vim.opt.linebreak = true
-vim.opt.termguicolors = true
 vim.g.netrw_winsize = 30
 vim.g.netrw_altv = 1
+
+if vim.env.COLORTERM == "truecolor" or vim.env.COLORTERM == "24bit" then
+  vim.opt.termguicolors = true
+else
+  vim.opt.termguicolors = false
+end
 
 -- Enable deep native project file discovery
 vim.opt.path:append("**")          -- Search recursively down through all subdirectories
