@@ -415,11 +415,20 @@ function! ProjectGrep()
     endif
 endfunction
 
-function! OptionalCommand(command)
-    if exists(':' . a:command) == 2
-        execute a:command
+function! OptionalCommand(command, ...)
+    " Extract just the base command name to check if it exists
+    let l:base_cmd = split(a:command, ' ')[0]
+    
+    if exists(':' . l:base_cmd) == 2
+        " Combine the command and any extra arguments passed to the function
+        let l:full_cmd = a:command
+        if a:0 > 0
+            let l:full_cmd .= ' ' . join(a:000, ' ')
+        endif
+        
+        execute l:full_cmd
     else
-        echo a:command . ' is unavailable'
+        echo l:base_cmd . ' is unavailable'
     endif
 endfunction
 
