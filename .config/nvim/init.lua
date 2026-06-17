@@ -553,6 +553,7 @@ if vim.fn.isdirectory(fzf_dir) == 1 then
     require('fzf-lua').setup({})
 
     -- Set up keymaps
+    vim.keymap.set('n', '<c-p>', '<cmd>FzfLua files<CR>', { desc = 'Find Files' })
     vim.keymap.set('n', '<leader>ff', '<cmd>FzfLua files<CR>', { desc = 'Find Files' })
     vim.keymap.set('n', '<leader>fg', '<cmd>FzfLua live_grep<CR>', { desc = 'Live Grep' })
     vim.keymap.set('n', '<leader>fb', '<cmd>FzfLua buffers<CR>', { desc = 'Buffers' })
