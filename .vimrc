@@ -21,6 +21,15 @@ endtry
 
 let mapleader = " "
 
+let c_functions = 1
+
+set wildignore+=*.o,*.obj,*.a,*.so,*.dylib,*.class
+set wildignore+=*.pyc,*.pyo,*.gem,*.egg
+set wildignore+=*.zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz
+set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
+set wildignore+=*/node_modules/*,*/bower_components/*
+set wildignore+=*.swp,*.swo,*.tmp,*~,*.un~
+
 "=========================================================
 " UI / Behavior
 "=========================================================
@@ -129,11 +138,51 @@ endfor
 "=========================================================
 " Completion
 "=========================================================
+set noautocomplete
+set complete=o
 set completeopt=menuone,noinsert,noselect
+set completeopt+=fuzzy
+
+inoremap <C-Space> <C-x><C-o>
 
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"
+
+"=========================================================
+" LSP Specific Smart Triggers
+"=========================================================
+
+" 1. Typing '.' inserts '.' then instantly checks for LSP members
+inoremap <expr> . SmartDotTrigger()
+
+function! SmartDotTrigger()
+    " If inside a comment or string syntax block, do not trigger
+    let l:syntax_group = synIDattr(synID(line('.'), col('.') - 1, 1), 'name')
+    if l:syntax_group =~? 'comment\|string'
+        return '.'
+    endif
+    
+    " Safely feed Ctrl-x followed by Ctrl-o via a brief 10ms timer
+    call timer_start(10, {-> feedkeys("\<C-x>\<C-o>", 'm')})
+    return '.'
+endfunction
+
+
+" 2. Typing '>' inserts '>' and checks if it completes an arrow '->'
+inoremap <expr> > SmartArrowTrigger()
+
+function! SmartArrowTrigger()
+    " Get text from start of line up to the cursor
+    let l:line_text = strpart(getline('.'), 0, col('.') - 1)
+    
+    " Check if the character directly behind the cursor is a hyphen
+    if l:line_text =~ '-$'
+        " Safely feed Ctrl-x followed by Ctrl-o via a brief 10ms timer
+        call timer_start(10, {-> feedkeys("\<C-x>\<C-o>", 'm')})
+    endif
+    return '>'
+endfunction
 
 "=========================================================
 " Tags / Paths
@@ -182,6 +231,8 @@ nnoremap <C-S-Down> :m +1<CR>==
 vnoremap <C-S-Up> :m '<-2<CR>gv=gv
 vnoremap <C-S-Down> :m '>+1<CR>gv=gv
 
+nnoremap Y y$
+
 nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
 
 nnoremap <leader>` <cmd>bel term<CR>
@@ -202,6 +253,16 @@ nnoremap <leader>c <cmd>cclose<CR>
 " Tags
 nnoremap <leader>jd <C-]>
 nnoremap <leader>jb <C-t>
+
+" Visual Surround
+xmap " S"
+xmap ' S'
+xmap ( S)
+xmap [ S]
+xmap { S}
+
+" Disable bad maps
+nnoremap Q <nop>
 
 "=========================================================
 " Optional plugin helpers
