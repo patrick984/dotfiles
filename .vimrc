@@ -363,21 +363,21 @@ let lspServers = [#{
       \ ]
 autocmd User LspSetup call LspAddServer(lspServers)
 
-nnoremap gd <cmd>LspGotoDefinition<CR>
-nnoremap gD <cmd>LspGotoDeclaration<CR>
-nnoremap gr <cmd>LspShowReferences<CR>
-nnoremap gi <cmd>LspGotoImpl<CR>
-nnoremap K  <cmd>LspHover<CR>
+nnoremap gd <cmd>call OptionalCommand('LspGotoDefinition')<CR>
+nnoremap gD <cmd>call OptionalCommand('LspGotoDeclaration')<CR>
+nnoremap gr <cmd>call OptionalCommand('LspShowReferences')<CR>
+nnoremap gi <cmd>call OptionalCommand('LspGotoImpl')<CR>
+nnoremap K  <cmd>call OptionalCommand('LspHover')<CR>
 
-nnoremap <leader>rn <cmd>LspRename<CR>
-nnoremap <leader>ca <cmd>LspCodeAction<CR>
+nnoremap <leader>rn <cmd>call OptionalCommand('LspRename')<CR>
+nnoremap <leader>ca <cmd>call OptionalCommand('LspCodeAction')<CR>
 
-nnoremap [d <cmd>LspDiagPrev<CR>
-nnoremap ]d <cmd>LspDiagNext<CR>
+nnoremap [d <cmd>call OptionalCommand('LspDiagPrev')<CR>
+nnoremap ]d <cmd>call OptionalCommand('LspDiagNext')<CR>
 
-nnoremap <leader>f <cmd>LspFormat<CR>
-nnoremap <leader>h <cmd>LspInlayHint toggle<CR>
-nnoremap <leader>cc <cmd>LspSwitchSourceHeader<CR>
+nnoremap <leader>f <cmd>call OptionalCommand('LspFormat')<CR>
+nnoremap <leader>h <cmd>call OptionalCommand('LspInlayHint toggle')<CR>
+nnoremap <leader>cc <cmd>call OptionalCommand('LspSwitchSourceHeader')<CR>
 nnoremap <Leader>x :cclose<Bar>lclose<Bar>pclose<CR>
 
 let g:fzf_vim = {}
@@ -421,47 +421,6 @@ function! OptionalCommand(command)
         echo a:command . ' is unavailable'
     endif
 endfunction
-
-let g:ale_completion_enabled = 1
-let g:ale_completion_auto_popup = 1
-let g:ale_completion_delay = 100
-let g:ale_completion_max_suggestions = 10
-
-let g:ale_lint_on_text_changed = 'always'
-let g:ale_lint_delay = 300
-
-let g:ale_fixers = { "python": ["ruff", "ruff_format"] }
-let g:ale_fix_on_save = 1
-
-let g:ale_set_signs = 0
-let g:ale_set_highlights = 0
-let g:ale_virtualtext_cursor = 'disabled'
-
-function! ToggleALEVisibility()
-    if exists(':ALEEnableBuffer') != 2
-        echo 'ALE is unavailable'
-        return
-    endif
-
-    let g:ale_visible = !get(g:, 'ale_visible', 0)
-
-    if g:ale_visible
-        let g:ale_set_signs = 1
-        let g:ale_set_highlights = 1
-        let g:ale_virtualtext_cursor = 'all'
-        ALEEnableBuffer
-        ALELint
-    else
-        let g:ale_set_signs = 0
-        let g:ale_set_highlights = 0
-        let g:ale_virtualtext_cursor = 'disabled'
-        ALEDisableBuffer
-    endif
-endfunction
-
-nnoremap <leader>a :call ToggleALEVisibility()<CR>
-nnoremap <leader>d :call OptionalCommand('ALEDetail')<CR>
-nnoremap <leader>l :lopen<CR>
 
 nnoremap <S-k> :call OptionalCommand('ALEHover')<CR>
 nnoremap <leader>gd :call OptionalCommand('ALEGoToDefinition')<CR>
