@@ -250,10 +250,6 @@ nnoremap <leader>N <cmd>cprev<CR>
 nnoremap <leader>q <cmd>copen<CR>
 nnoremap <leader>c <cmd>cclose<CR>
 
-" Tags
-nnoremap <leader>jd <C-]>
-nnoremap <leader>jb <C-t>
-
 " Visual Surround
 xmap " S"
 xmap ' S'
@@ -370,18 +366,18 @@ autocmd User LspSetup call LspAddServer(lspServers)
 
 nnoremap gd <cmd>call OptionalCommand('LspGotoDefinition')<CR>
 nnoremap gD <cmd>call OptionalCommand('LspGotoDeclaration')<CR>
-nnoremap gr <cmd>call OptionalCommand('LspShowReferences')<CR>
-nnoremap gi <cmd>call OptionalCommand('LspGotoImpl')<CR>
+nnoremap grr <cmd>call OptionalCommand('LspShowReferences')<CR>
+nnoremap gri <cmd>call OptionalCommand('LspGotoImpl')<CR>
 nnoremap K  <cmd>call OptionalCommand('LspHover')<CR>
 
-nnoremap <leader>rn <cmd>call OptionalCommand('LspRename')<CR>
-nnoremap <leader>ca <cmd>call OptionalCommand('LspCodeAction')<CR>
+nnoremap grn <cmd>call OptionalCommand('LspRename')<CR>
+nnoremap gra <cmd>call OptionalCommand('LspCodeAction')<CR>
 
 nnoremap [d <cmd>call OptionalCommand('LspDiagPrev')<CR>
 nnoremap ]d <cmd>call OptionalCommand('LspDiagNext')<CR>
 
-nnoremap <leader>f <cmd>call OptionalCommand('LspFormat')<CR>
-nnoremap <leader>h <cmd>call OptionalCommand('LspInlayHint toggle')<CR>
+nnoremap <leader>cf <cmd>call OptionalCommand('LspFormat')<CR>
+nnoremap <leader>th <cmd>call OptionalCommand('LspInlayHints toggle')<CR>
 nnoremap <leader>cc <cmd>call OptionalCommand('LspSwitchSourceHeader')<CR>
 nnoremap <Leader>x :cclose<Bar>lclose<Bar>pclose<CR>
 
@@ -427,7 +423,7 @@ function! OptionalCommand(command)
     endif
 endfunction
 
-nnoremap <leader>gs :call OptionalCommand('Git')<CR>
+nnoremap <leader>s :call OptionalCommand('Git')<CR>
 
 "=========================================================
 " Plugins
