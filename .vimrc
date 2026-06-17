@@ -445,6 +445,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'airblade/vim-rooter'
 Plug 'yegappan/lsp'
 Plug 'dense-analysis/ale'
+    
 call plug#end()
 
 endif
