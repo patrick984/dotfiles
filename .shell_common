@@ -86,6 +86,13 @@ if command -v fzf >/dev/null 2>&1; then
         *) export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }$fzf_light_opts" ;;
     esac
     unset fzf_light_opts
+
+    fzf_ignore_opts="--walker-skip .git,.svn,.hg,node_modules,.DS_Store,__pycache__,.cache"
+    case " ${FZF_DEFAULT_OPTS:-} " in
+        *" $fzf_ignore_opts "*) ;;
+        *) export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }$fzf_ignore_opts" ;;
+    esac
+    unset fzf_ignore_opts
 fi
 
 if command -v direnv >/dev/null 2>&1; then

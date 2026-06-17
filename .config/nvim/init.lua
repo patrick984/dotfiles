@@ -21,7 +21,7 @@ vim.g.netrw_altv = 1
 
 -- Enable deep native project file discovery
 vim.opt.path:append("**")          -- Search recursively down through all subdirectories
-vim.opt.wildignore:append({ "**/node_modules/**", "**/.git/**", "**/target/**", "**/bin/**", "**/obj/**" }) -- Skip heavy folders
+vim.opt.wildignore:append({ "**/.DS_Store", "**/node_modules/**", "**/.git/**", "**/.cache/**", "**/target/**", "**/bin/**", "**/obj/**" }) -- Skip heavy folders
 vim.opt.wildmode = "longest:full,full" -- Smooth Tab completion behavior in the command line
 
 -- Buffer navigation in Normal Mode
