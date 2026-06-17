@@ -77,7 +77,7 @@ vim.keymap.set("i", "<Tab>", function()
 
     -- Fallback: normal tab insertion/indentation
     return vim.api.nvim_replace_termcodes( "<Tab>", true, true, true)
-end, 
+end,
 { expr = true, noremap = true, desc = "LSP omnifunc completion" })
 
 -- Close popups
@@ -85,7 +85,7 @@ vim.keymap.set('n', '<leader>x', function()
   -- 1. Close Quickfix and Location lists
   vim.cmd('cclose')
   vim.cmd('lclose')
-  
+
   -- 2. Close all floating/popup windows (LSP hover, diagnostics, etc.)
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local config = vim.api.nvim_win_get_config(win)
@@ -143,12 +143,12 @@ local hl_groups = {
     ErrorMsg       = { fg = "#ffffff", bg = "#bb5d5d" },
     WarningMsg     = { fg = "#99884c" },
     Conceal        = { fg = "#999999" },
-    
+
     -- Diff / Git Gutter
     DiffAdd        = { fg = "#000000", bg = "#d4edd9" },
     DiffChange     = { fg = "#000000", bg = "#e1f5fe" },
     DiffDelete     = { fg = "#000000", bg = "#fbe9e7" },
-    
+
     -- Core Token Syntax Syntax
     Comment        = { fg = "#6b7ca8", italic = true },
     String         = { fg = "#067200" },
@@ -168,7 +168,7 @@ local hl_groups = {
     Define         = { fg = "#7c3c00" },
     Constant       = { fg = "#7c3c00" },
     Special        = { fg = "#7c3c00" },
-    
+
     -- Diagnostics
     DiagnosticError = { fg = "#bb5d5d" },
     DiagnosticWarn  = { fg = "#99884c" },
@@ -182,7 +182,7 @@ local hl_groups = {
     DiagnosticVirtualTextWarn = { fg = "#99884c" },
     DiagnosticVirtualTextInfo = { fg = "#4670bb" },
     DiagnosticVirtualTextHint = { fg = "#558855" },
-    
+
     -- Misc elements
     Todo           = { fg = "#d27400", bg = "#f6f8fa", bold = true },
     NonText        = { fg = "#a0a0a0" },
@@ -224,14 +224,14 @@ vim.api.nvim_set_hl(0, "iCursor", { fg = "NONE", bg = "#DD0000" })
 local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
 function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
     opts = opts or {}
-    
+
     -- "single" uses thin line borders colored by FloatBorder above.
     -- Change to "none" if you prefer completely borderless floating panels.
     opts.border = opts.border or "single"
-    
+
     -- Forces the window to use our unified background highlights
     opts.focusable = opts.focusable ~= false
-    
+
     return orig_util_open_floating_preview(contents, syntax, opts, ...)
 end
 
@@ -251,7 +251,7 @@ vim.diagnostic.config({
 vim.keymap.set("n", "<leader>bd", function()
     local bd = vim.api.nvim_buf_delete
     local buf = vim.api.nvim_get_current_buf()
-    
+
     -- If file has unsaved changes, let native Neovim throw the safe warning
     if vim.bo.modified then
         vim.cmd("bdelete")
@@ -261,12 +261,12 @@ vim.keymap.set("n", "<leader>bd", function()
     -- Switch to next buffer before wiping the current one
     vim.cmd("bnext")
     local new_buf = vim.api.nvim_get_current_buf()
-    
+
     -- If we didn't actually change buffers (it was the last one open), create an empty scratchpad
     if buf == new_buf then
         vim.cmd("enew")
     end
-    
+
     -- Safely wipe out the target buffer background array
     pcall(bd, buf, { force = false })
 end, { silent = true, desc = "Delete buffer safely" })
@@ -308,9 +308,9 @@ local mode_map = {
 function _G.render_minimal_statusline()
     local mode = vim.api.nvim_get_mode().mode
     update_statusline_hl(mode)
-    
+
     local mode_display = mode_map[mode] or ' NORMAL '
-    
+
     -- Constructing the structural component array:
     -- %#Group# switches colors. %f represents file paths. %m checks modification flags.
     -- %= splits layout alignment to the far right.
@@ -333,7 +333,7 @@ vim.api.nvim_create_autocmd({ "ModeChanged" }, {
 
 
 -- ========================================================================== --
--- 4. LSP Configuration 
+-- 4. LSP Configuration
 -- ========================================================================== --
 vim.lsp.config("*", {
     root_markers = {
@@ -386,8 +386,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
         end
 
         vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+        vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = "Go to declaration" })
         vim.keymap.set("n", "<leader>cs", vim.lsp.buf.workspace_symbol, opts)
-
+        vim.keymap.set("n", "<leader>cc", "<cmd>ClangdSwitchSourceHeader<cr>", { desc = "Switch Source/Header" })
         vim.keymap.set("n", "<leader>cf", function()
                 vim.lsp.buf.format({ bufnr = bufnr, async = true })
         end, { buffer = bufnr, desc = "Format Document (Manual)" })
