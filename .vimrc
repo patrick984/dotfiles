@@ -238,9 +238,9 @@ nnoremap Y y$
 nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
 
 nnoremap <leader>` <cmd>bel term<CR>
-nnoremap <leader>b :ls<CR>:b
-nnoremap <leader>g <cmd>call ProjectGrep()<CR>
-nnoremap <leader>f <cmd>call FindFile()<CR>
+nnoremap <leader>fb :ls<CR>:b
+nnoremap <leader>fg <cmd>call ProjectGrep()<CR>
+nnoremap <leader>ff <cmd>call FindFile()<CR>
 nnoremap <C-p> <cmd>call FindFile()<CR>
 
 nnoremap <leader>m <cmd>make<CR>
@@ -443,7 +443,7 @@ function! OptionalCommand(command, ...)
     endif
 endfunction
 
-nnoremap <leader>s :call OptionalCommand('Git')<CR>
+nnoremap <leader>gs :call OptionalCommand('Git')<CR>
 
 "=========================================================
 " Plugins

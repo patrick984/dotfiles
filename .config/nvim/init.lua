@@ -558,3 +558,15 @@ if vim.fn.isdirectory(fzf_dir) == 1 then
     vim.keymap.set('n', '<leader>fg', '<cmd>FzfLua live_grep<CR>', { desc = 'Live Grep' })
     vim.keymap.set('n', '<leader>fb', '<cmd>FzfLua buffers<CR>', { desc = 'Buffers' })
 end
+
+local fugitive_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/vim-fugitive')
+
+if vim.fn.isdirectory(fugitive_dir) == 1 then
+    -- Load the plugin via native package manager
+    vim.cmd('packadd vim-fugitive')
+
+    -- Set up basic keymaps for common Git actions
+    vim.keymap.set('n', '<leader>gs', '<cmd>Git<CR>', { desc = 'Git Status summary' })
+    vim.keymap.set('n', '<leader>gd', '<cmd>Gdiffsplit<CR>', { desc = 'Git Diff split' })
+    vim.keymap.set('n', '<leader>gb', '<cmd>Git blame<CR>', { desc = 'Git Blame' })
+end
