@@ -184,20 +184,20 @@ vnoremap <C-S-Down> :m '>+1<CR>gv=gv
 
 nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
 
-nnoremap <leader>` :bel term<CR>
+nnoremap <leader>` <cmd>bel term<CR>
 nnoremap <leader>b :ls<CR>:b
-nnoremap <leader>g :call ProjectGrep()<CR>
-nnoremap <leader>f :call FindFile()<CR>
-nnoremap <C-p> :call FindFile()<CR>
+nnoremap <leader>g <cmd>call ProjectGrep()<CR>
+nnoremap <leader>f <cmd>call FindFile()<CR>
+nnoremap <C-p> <cmd>call FindFile()<CR>
 
-nnoremap <leader>m :make<CR>
-nnoremap <leader>r :!./%<<CR>
+nnoremap <leader>m <cmd>make<CR>
+nnoremap <leader>r <cmd>!./%<<CR>
 
 " Quickfix
-nnoremap <leader>n :cnext<CR>
-nnoremap <leader>N :cprev<CR>
-nnoremap <leader>q :copen<CR>
-nnoremap <leader>c :cclose<CR>
+nnoremap <leader>n <cmd>cnext<CR>
+nnoremap <leader>N <cmd>cprev<CR>
+nnoremap <leader>q <cmd>copen<CR>
+nnoremap <leader>c <cmd>cclose<CR>
 
 " Tags
 nnoremap <leader>jd <C-]>
@@ -293,17 +293,19 @@ nnoremap <leader>gs :call OptionalCommand('Git')<CR>
 "=========================================================
 " Plugins
 "=========================================================
-"call plug#begin('~/.vim/plugged')
+call plug#begin('~/.vim/plugged')
 
-"Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-"Plug 'junegunn/fzf.vim'
-"Plug 'dense-analysis/ale'
-"Plug 'airblade/vim-gitgutter'
-"Plug 'airblade/vim-rooter'
-"Plug 'tpope/vim-surround'
-"Plug 'tpope/vim-commentary'
-"Plug 'tpope/vim-fugitive'
-
-"call plug#end()
+Plug 'tpope/vim-unimpaired'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-fugitive'
+Plug 'junegunn/fzf.vim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'airblade/vim-gitgutter'
+Plug 'airblade/vim-rooter'
+Plug 'yegappan/lsp'
+Plug 'dense-analysis/ale'
+call plug#end()
 
 endif
