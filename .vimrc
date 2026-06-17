@@ -291,6 +291,11 @@ let g:ale_set_highlights = 0
 let g:ale_virtualtext_cursor = 'disabled'
 
 function! ToggleALEVisibility()
+    if exists(':ALEEnableBuffer') != 2
+        echo 'ALE is unavailable'
+        return
+    endif
+
     let g:ale_visible = !get(g:, 'ale_visible', 0)
 
     if g:ale_visible
@@ -308,7 +313,7 @@ function! ToggleALEVisibility()
 endfunction
 
 nnoremap <leader>a :call ToggleALEVisibility()<CR>
-nnoremap <leader>d :ALEDetail<CR>
+nnoremap <leader>d :OptionalCommand('ALEDetail')<CR>
 
 "=========================================================
 " LSP
