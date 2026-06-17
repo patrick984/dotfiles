@@ -448,6 +448,7 @@ nnoremap <leader>gs :call OptionalCommand('Git')<CR>
 "=========================================================
 " Plugins
 "=========================================================
+if exists('*plug#begin')
 call plug#begin('~/.vim/plugged')
 
 Plug 'tpope/vim-unimpaired'
@@ -463,5 +464,6 @@ Plug 'yegappan/lsp'
 Plug 'dense-analysis/ale'
     
 call plug#end()
+endif
 
 endif

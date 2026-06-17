@@ -393,7 +393,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
         vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = "Go to declaration" })
         vim.keymap.set("n", "<leader>cs", vim.lsp.buf.workspace_symbol, opts)
-        vim.keymap.set("n", "<leader>cc", "<cmd>ClangdSwitchSourceHeader<cr>", { desc = "Switch Source/Header" })
+        if client.name == "clangd" and vim.fn.exists(":ClangdSwitchSourceHeader") == 2 then
+            vim.keymap.set("n", "<leader>cc", "<cmd>ClangdSwitchSourceHeader<cr>", { buffer = bufnr, desc = "Switch Source/Header" })
+        end
         vim.keymap.set("n", "<leader>cf", function()
                 vim.lsp.buf.format({ bufnr = bufnr, async = true })
         end, { buffer = bufnr, desc = "Format Document (Manual)" })
