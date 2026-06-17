@@ -76,6 +76,23 @@ set splitright
 nnoremap <silent> <Tab> <cmd>update<CR><cmd>bnext<CR>
 nnoremap <silent> <S-Tab> <cmd>update<CR><cmd>bprevious<CR>
 
+let g:netrw_winsize = 30
+autocmd FileType netrw wincmd L
+
+nmap <silent> <leader>e <cmd>Lex!<CR>
+
+" Use ctrl-[hjkl] to select the active split.
+nmap <silent> <leader>h :wincmd h<CR>
+nmap <silent> <leader>j :wincmd j<CR>
+nmap <silent> <leader>k :wincmd k<CR>
+nmap <silent> <leader>l :wincmd l<CR>
+
+" Use g[hjkl] to move splits around.
+nnoremap <leader><left> <C-W><C-H>
+nnoremap <leader><down> <C-W><C-J>
+nnoremap <leader><up> <C-W><C-K>
+nnoremap <leader><right> <C-W><C-L>
+
 "=========================================================
 " Indentation
 "=========================================================
@@ -167,7 +184,6 @@ vnoremap <C-S-Down> :m '>+1<CR>gv=gv
 
 nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
 
-nnoremap <leader>e :Explore<CR>
 nnoremap <leader>` :bel term<CR>
 nnoremap <leader>b :ls<CR>:b
 nnoremap <leader>g :call ProjectGrep()<CR>

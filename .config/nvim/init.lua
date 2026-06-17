@@ -16,6 +16,8 @@ vim.opt.clipboard = "unnamedplus"
 vim.opt.wrap = true
 vim.opt.linebreak = true
 vim.opt.termguicolors = true
+vim.g.netrw_winsize = 30
+vim.g.netrw_altv = 1
 
 -- Enable deep native project file discovery
 vim.opt.path:append("**")          -- Search recursively down through all subdirectories
@@ -25,6 +27,19 @@ vim.opt.wildmode = "longest:full,full" -- Smooth Tab completion behavior in the 
 -- Buffer navigation in Normal Mode
 vim.keymap.set("n", "<Tab>", ":bnext<CR>", { silent = true, desc = "Next buffer" })
 vim.keymap.set("n", "<S-Tab>", ":bprevious<CR>", { silent = true, desc = "Previous buffer" })
+
+-- Split navigation
+vim.keymap.set("n", "<leader>e", "<cmd>Lex!<CR>", { silent = true, desc = "Open file explorer"})
+
+vim.keymap.set("n", "<leader>h", ":wincmd h<CR>", { silent = true, desc = "Nav split left"})
+vim.keymap.set("n", "<leader>j", ":wincmd j<CR>", { silent = true, desc = "Nav split below"})
+vim.keymap.set("n", "<leader>k", ":wincmd k<CR>", { silent = true, desc = "Nav split above"})
+vim.keymap.set("n", "<leader>l", ":wincmd l<CR>", { silent = true, desc = "Nav split right"})
+
+vim.keymap.set("n", "<leader><left>", ":wincmd H<CR>", { silent = true, desc = "Nav split left"})
+vim.keymap.set("n", "<leader><down>", ":wincmd J<CR>", { silent = true, desc = "Nav split below"})
+vim.keymap.set("n", "<leader><up>", ":wincmd K<CR>", { silent = true, desc = "Nav split above"})
+vim.keymap.set("n", "<leader><right>", ":wincmd L<CR>", { silent = true, desc = "Nav split right"})
 
 -- Quick find file anywhere under the current working directory
 vim.keymap.set("n", "<leader>ff", ":find ", { desc = "Find file in project" })
