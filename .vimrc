@@ -138,8 +138,10 @@ endfor
 "=========================================================
 " Completion
 "=========================================================
-set noautocomplete
-set complete=o
+if has("patch-9.1.1590")
+    set noautocomplete
+    set complete=o
+endif
 set completeopt=menuone,noinsert,noselect
 set completeopt+=fuzzy
 
