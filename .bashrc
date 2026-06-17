@@ -94,3 +94,4 @@ if ! shopt -oq posix; then
 fi
 
 [ -r "$HOME/.bash_aliases" ] && . "$HOME/.bash_aliases"
+[ -r "$HOME/.aliases" ] && . "$HOME/.aliases"

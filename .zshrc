@@ -70,6 +70,8 @@ fi
 
 PROMPT='${host_segment}%F{4}%~%f${git_prompt_segment} %# '
 
+# PROMPT='%{$fg[$NCOLOR]%}%n%{$fg[green]%}@%m%{$reset_color%} %~ $(git_prompt_info)%{$fg[red]%}%(!.#.»)%{$reset_color%} '
+
 bindkey -e
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
@@ -78,3 +80,6 @@ bindkey '^[[A' up-line-or-beginning-search
 bindkey '^[[B' down-line-or-beginning-search
 bindkey '^[OA' up-line-or-beginning-search
 bindkey '^[OB' down-line-or-beginning-search
+
+[ -r "$HOME/.bash_aliases" ] && . "$HOME/.bash_aliases"
+[ -r "$HOME/.aliases" ] && . "$HOME/.aliases"

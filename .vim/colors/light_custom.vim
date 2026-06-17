@@ -16,7 +16,7 @@ highlight Normal        guifg=#000000 guibg=#fffff5 gui=NONE   ctermfg=16   cter
 highlight NormalAlt     guifg=#000000 guibg=#f6f8fa gui=NONE   ctermfg=16   ctermbg=231  cterm=NONE
 highlight CursorLine    guifg=NONE    guibg=#f6f8fa gui=NONE   ctermfg=NONE ctermbg=231  cterm=NONE
 highlight CursorColumn  guifg=NONE    guibg=#f6f8fa gui=NONE   ctermfg=NONE ctermbg=231  cterm=NONE
-highlight LineNr        guifg=#000000 guibg=NONE    gui=NONE   ctermfg=16   ctermbg=NONE cterm=NONE
+highlight LineNr        guifg=#808080 guibg=NONE    gui=NONE   ctermfg=16   ctermbg=NONE cterm=NONE
 highlight CursorLineNr  guifg=#000000 guibg=NONE    gui=NONE   ctermfg=16   ctermbg=NONE cterm=NONE
 
 highlight Visual        guifg=NONE    guibg=#9fdfff gui=NONE   ctermfg=NONE ctermbg=153  cterm=NONE
@@ -37,7 +37,7 @@ highlight PmenuSel      guifg=#ffffff guibg=#558855 gui=NONE   ctermfg=231  cter
 highlight PmenuSbar     guibg=#000000 ctermbg=16
 highlight PmenuThumb    guibg=#000000 ctermbg=16
 
-highlight Folded        guifg=#000000 guibg=#0366d6 gui=NONE   ctermfg=16   ctermbg=26   cterm=NONE
+highlight Folded        guifg=#4a6fa5 guibg=#dceeff gui=NONE   ctermfg=16   ctermbg=26   cterm=NONE
 highlight FoldColumn    guifg=#000000 guibg=NONE    gui=NONE   ctermfg=16   ctermbg=NONE cterm=NONE
 
 highlight SignColumn    guibg=NONE    ctermbg=NONE
@@ -45,6 +45,8 @@ highlight ColorColumn   guibg=#eeeeee ctermbg=255
 
 highlight ErrorMsg      guibg=#bb5d5d ctermbg=131
 highlight WarningMsg    guifg=#99884c ctermfg=101
+
+highlight Conceal       guifg=#999999 guibg=NONE
 
 " =========================
 " Diff / Git gutter
@@ -68,6 +70,7 @@ highlight Operator      guifg=#7b0080 guibg=NONE    gui=NONE   ctermfg=90   cter
 highlight Statement     guifg=#7b0080 guibg=NONE    gui=NONE   ctermfg=90   ctermbg=NONE cterm=NONE
 highlight Conditional   guifg=#7b0080 guibg=NONE    gui=NONE   ctermfg=90   ctermbg=NONE cterm=NONE
 highlight Repeat        guifg=#7b0080 guibg=NONE    gui=NONE   ctermfg=90   ctermbg=NONE cterm=NONE
+highlight link LspSemanticOperator Normal
 
 highlight Function      guifg=#102c8a guibg=NONE    gui=NONE   ctermfg=18   ctermbg=NONE cterm=NONE
 
@@ -85,6 +88,21 @@ highlight Special       guifg=#7c3c00 guibg=NONE    gui=NONE   ctermfg=94   cter
 " Misc
 " =========================
 highlight Todo          guifg=#d27400 guibg=#f6f8fa gui=bold   ctermfg=172  ctermbg=231  cterm=bold
-highlight NonText       guifg=#000000 ctermfg=16
+highlight NonText       guifg=#a0a0a0 ctermfg=16
 highlight SpecialKey    guifg=#000000 ctermfg=16
 
+highlight Cursor        guifg=white guibg=#0366d6
+highlight iCursor       guifg=white guibg=#DD0000
+set guicursor+=i:ver25-iCursor
+
+highlight DiagnosticError guifg=#bb5d5d
+highlight DiagnosticWarn  guifg=#99884c
+highlight DiagnosticInfo  guifg=#4670bb
+highlight DiagnosticHint  guifg=#558855
+
+g:terminal_ansi_colors = [ 
+       '#000000', '#A80000', '#007800', '#705000', 
+       '#0030C0', '#800080', '#006868', '#202020', 
+       '#555555', '#D80000', '#00A000', '#946C00', 
+       '#0050FF', '#B000B0', '#009090', '#333333'  
+       ]
