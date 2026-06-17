@@ -540,12 +540,15 @@ enable_lsp_if_available("roslyn", "roslyn-language-server", {
 -- ========================================================================== --
 
 local fzf_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/fzf-lua')
+local fzf_icons_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/nvim-web-devicons')
 
 if vim.fn.isdirectory(fzf_dir) == 1 then
     -- Load the plugins using the built-in package manager
     vim.cmd('packadd fzf-lua')
-    vim.cmd('packadd nvim-web-devicons')
 
+    if vim.fn.isdirectory(fzf_icons_dir) == 1 then
+        vim.cmd('packadd nvim-web-devicons')
+    end
     -- Initialize the plugin settings
     require('fzf-lua').setup({})
 
