@@ -539,6 +539,12 @@ enable_lsp_if_available("roslyn", "roslyn-language-server", {
 -- 1. General Settings
 -- ========================================================================== --
 
+local codediff_dir = vim.fn.expand("~/.local/share/nvim/codediff.nvim")
+
+if vim.fn.isdirectory(codediff_dir) then
+    vim.opt.rtp:append("~/.local/share/nvim/codediff.nvim")
+end
+
 local fzf_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/fzf-lua')
 local fzf_icons_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/nvim-web-devicons')
 
