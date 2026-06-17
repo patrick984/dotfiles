@@ -264,6 +264,125 @@ xmap { S}
 " Disable bad maps
 nnoremap Q <nop>
 
+" Define a function to toggle the location list
+function! ToggleLocationList()
+    " Check if any window in the current tab is a location list window
+    let l:loc_open = filter(getwininfo(), 'v:val.loclist && v:val.tabnr == tabpagenr()')
+    if empty(l:loc_open)
+        lopen
+    else
+        lclose
+    endif
+endfunction
+
+nnoremap <silent> <leader>l :call ToggleLocationList()<CR>
+
+"=========================================================
+" ALE
+"=========================================================
+let g:ale_enabled = 0
+let g:ale_disable_lsp = 1
+
+let g:ale_lint_on_text_changed = 'always'
+let g:ale_lint_delay = 300
+
+let g:ale_set_signs = 0
+let g:ale_set_highlights = 0
+let g:ale_virtualtext_cursor = 'disabled'
+
+function! ToggleALEVisibility()
+    let g:ale_visible = !get(g:, 'ale_visible', 0)
+
+    if g:ale_visible
+        let g:ale_set_signs = 1
+        let g:ale_set_highlights = 1
+        let g:ale_virtualtext_cursor = 'all'
+        ALEEnableBuffer
+        ALELint
+    else
+        let g:ale_set_signs = 0
+        let g:ale_set_highlights = 0
+        let g:ale_virtualtext_cursor = 'disabled'
+        ALEDisableBuffer
+    endif
+endfunction
+
+nnoremap <leader>a :call ToggleALEVisibility()<CR>
+nnoremap <leader>d :ALEDetail<CR>
+
+"=========================================================
+" LSP
+""=========================================================
+
+let lspOpts = #{
+      \ aleSupport: v:true,
+      \ autoHighlightDiags: v:true,
+      \ autoPopulateDiags: v:true,
+      \ omniComplete: v:true,
+      \ autoComplete: v:false,
+      \ completionTextEdit: v:true,
+      \ echoSignature: v:true,
+      \ hoverInPreview: v:true,
+      \ semanticHighlight: v:true,
+      \ showDiagInPopup: v:true,
+      \ snippetSupport: v:false,
+      \ }
+autocmd User LspSetup call LspOptionsSet(lspOpts)
+
+let csharp_bin = exepath(expand('~/.dotnet/tools/roslyn-language-server'))
+let rustanalyzer_bin = exepath(expand('~/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rust-analyzer'))
+
+let lspServers = [#{
+      \ name: 'clangd',
+      \ filetype: ['c', 'cpp'],
+      \ path: 'clangd',
+      \ args: ['--background-index'],
+      \ },
+      \
+      \ #{
+      \ name: 'roslyn-ls',
+      \ filetype: ['cs'],
+      \ path: csharp_bin,
+      \ args: ['--stdio', '--autoLoadProjects'],
+      \ },
+      \
+      \ #{
+      \ name: 'pyright',
+      \ filetype: ['python'],
+      \ path: 'pyright-langserver',
+      \ args: ['--stdio'],
+      \ },
+      \
+      \ #{
+      \ name: 'rustlang',
+      \ filetype: ['rust'],
+      \ path: rustanalyzer_bin,
+      \ args: [],
+      \ syncInit: v:true
+      \ }
+      \ ]
+autocmd User LspSetup call LspAddServer(lspServers)
+
+nnoremap gd <cmd>LspGotoDefinition<CR>
+nnoremap gD <cmd>LspGotoDeclaration<CR>
+nnoremap gr <cmd>LspShowReferences<CR>
+nnoremap gi <cmd>LspGotoImpl<CR>
+nnoremap K  <cmd>LspHover<CR>
+
+nnoremap <leader>rn <cmd>LspRename<CR>
+nnoremap <leader>ca <cmd>LspCodeAction<CR>
+
+nnoremap [d <cmd>LspDiagPrev<CR>
+nnoremap ]d <cmd>LspDiagNext<CR>
+
+nnoremap <leader>f <cmd>LspFormat<CR>
+nnoremap <leader>h <cmd>LspInlayHint toggle<CR>
+nnoremap <leader>cc <cmd>LspSwitchSourceHeader<CR>
+nnoremap <Leader>x :cclose<Bar>lclose<Bar>pclose<CR>
+
+let g:fzf_vim = {}
+let g:fzf_vim.preview_window = ['up,50%', 'ctrl-/']
+
 "=========================================================
 " Optional plugin helpers
 "=========================================================
