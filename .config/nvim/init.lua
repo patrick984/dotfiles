@@ -570,3 +570,10 @@ if vim.fn.isdirectory(fugitive_dir) == 1 then
     vim.keymap.set('n', '<leader>gd', '<cmd>Gdiffsplit<CR>', { desc = 'Git Diff split' })
     vim.keymap.set('n', '<leader>gb', '<cmd>Git blame<CR>', { desc = 'Git Blame' })
 end
+
+local diffs_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/diffs.nvim')
+
+if vim.fn.isdirectory(diffs_dir) == 1 then
+    -- Load the plugin via native package manager
+    vim.cmd('packadd diffs.nvim')
+end
