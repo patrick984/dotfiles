@@ -534,3 +534,23 @@ enable_lsp_if_available("roslyn", "roslyn-language-server", {
         },
     },
 })
+
+-- ========================================================================== --
+-- 1. General Settings
+-- ========================================================================== --
+
+local fzf_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/fzf-lua')
+
+if vim.fn.isdirectory(fzf_dir) == 1 then
+    -- Load the plugins using the built-in package manager
+    vim.cmd('packadd fzf-lua')
+    vim.cmd('packadd nvim-web-devicons')
+
+    -- Initialize the plugin settings
+    require('fzf-lua').setup({})
+
+    -- Set up keymaps
+    vim.keymap.set('n', '<leader>ff', '<cmd>FzfLua files<CR>', { desc = 'Find Files' })
+    vim.keymap.set('n', '<leader>fg', '<cmd>FzfLua live_grep<CR>', { desc = 'Live Grep' })
+    vim.keymap.set('n', '<leader>fb', '<cmd>FzfLua buffers<CR>', { desc = 'Buffers' })
+end
