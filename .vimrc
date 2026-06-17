@@ -138,7 +138,7 @@ endfor
 "=========================================================
 " Completion
 "=========================================================
-set noautocomplete
+"set noautocomplete -- FIXME: invalid option?
 set complete=o
 set completeopt=menuone,noinsert,noselect
 set completeopt+=fuzzy
