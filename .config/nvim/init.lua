@@ -558,7 +558,28 @@ if vim.fn.isdirectory(fzf_dir) == 1 then
         vim.cmd('packadd nvim-web-devicons')
     end
     -- Initialize the plugin settings
-    require('fzf-lua').setup({})
+    require('fzf-lua').setup({
+        fzf_colors = true,
+        hls = {
+            normal = "Pmenu",
+            border = "FloatBorder",
+            title = "Title",
+            preview_normal = "NormalFloat",
+            preview_border = "FloatBorder",
+            fzf = {
+                normal = "Pmenu",
+                cursorline = "PmenuSel",
+                match = "Search",
+                border = "FloatBorder",
+                gutter = "Pmenu",
+                prompt = "Special",
+                query = "Pmenu",
+            },
+        },
+        grep = {
+            rg_opts = "--column --line-number --no-heading --color=never --smart-case --max-columns=4096 -e",
+        },
+    })
 
     -- Set up keymaps
     vim.keymap.set('n', '<c-p>', '<cmd>FzfLua files<CR>', { desc = 'Find Files' })
