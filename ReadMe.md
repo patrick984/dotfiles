@@ -90,7 +90,7 @@ formatting.
 ### tmux
 
 1. Uses a light-background status line.
-2. Keeps `C-a` as the prefix.
+2. Uses `C-Space` as the prefix.
 3. Optimised for SSH with no plugin-manager dependency.
 
 ### Zsh
