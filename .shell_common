@@ -1,6 +1,16 @@
 # Shared interactive shell settings for bash and zsh.
 
-export EDITOR="${EDITOR:-nvim}"
+if [ -z "${EDITOR:-}" ]; then
+    for editor_candidate in nvim vim vi; do
+        if command -v "$editor_candidate" >/dev/null 2>&1; then
+            EDITOR="$editor_candidate"
+            break
+        fi
+    done
+    EDITOR="${EDITOR:-vi}"
+fi
+export EDITOR
+unset editor_candidate
 export VISUAL="${VISUAL:-$EDITOR}"
 export PAGER="${PAGER:-less}"
 export LESS="${LESS:--FRX}"

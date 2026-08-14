@@ -552,57 +552,63 @@ local fzf_icons_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/nvim-web-de
 
 if vim.fn.isdirectory(fzf_dir) == 1 then
     -- Load the plugins using the built-in package manager
-    vim.cmd('packadd fzf-lua')
+    local fzf_loaded = pcall(vim.cmd, 'packadd fzf-lua')
 
     if vim.fn.isdirectory(fzf_icons_dir) == 1 then
-        vim.cmd('packadd nvim-web-devicons')
+        pcall(vim.cmd, 'packadd nvim-web-devicons')
     end
-    -- Initialize the plugin settings
-    require('fzf-lua').setup({
-        fzf_colors = true,
-        hls = {
-            normal = "Pmenu",
-            border = "FloatBorder",
-            title = "Title",
-            preview_normal = "NormalFloat",
-            preview_border = "FloatBorder",
-            fzf = {
-                normal = "Pmenu",
-                cursorline = "PmenuSel",
-                match = "Search",
-                border = "FloatBorder",
-                gutter = "Pmenu",
-                prompt = "Special",
-                query = "Pmenu",
-            },
-        },
-        grep = {
-            rg_opts = "--column --line-number --no-heading --color=never --smart-case --max-columns=4096 -e",
-        },
-    })
 
-    -- Set up keymaps
-    vim.keymap.set('n', '<c-p>', '<cmd>FzfLua files<CR>', { desc = 'Find Files' })
-    vim.keymap.set('n', '<leader>ff', '<cmd>FzfLua files<CR>', { desc = 'Find Files' })
-    vim.keymap.set('n', '<leader>fg', '<cmd>FzfLua live_grep<CR>', { desc = 'Live Grep' })
-    vim.keymap.set('n', '<leader>fb', '<cmd>FzfLua buffers<CR>', { desc = 'Buffers' })
+    local fzf_ok, fzf_lua = pcall(require, 'fzf-lua')
+    if fzf_loaded and fzf_ok then
+        -- Initialize the plugin settings
+        fzf_lua.setup({
+            fzf_colors = true,
+            hls = {
+                normal = "Pmenu",
+                border = "FloatBorder",
+                title = "Title",
+                preview_normal = "NormalFloat",
+                preview_border = "FloatBorder",
+                fzf = {
+                    normal = "Pmenu",
+                    cursorline = "PmenuSel",
+                    match = "Search",
+                    border = "FloatBorder",
+                    gutter = "Pmenu",
+                    prompt = "Special",
+                    query = "Pmenu",
+                },
+            },
+            grep = {
+                rg_opts = "--column --line-number --no-heading --color=never --smart-case --max-columns=4096 -e",
+            },
+        })
+
+        -- Set up keymaps
+        vim.keymap.set('n', '<c-p>', '<cmd>FzfLua files<CR>', { desc = 'Find Files' })
+        vim.keymap.set('n', '<leader>ff', '<cmd>FzfLua files<CR>', { desc = 'Find Files' })
+        vim.keymap.set('n', '<leader>fg', '<cmd>FzfLua live_grep<CR>', { desc = 'Live Grep' })
+        vim.keymap.set('n', '<leader>fb', '<cmd>FzfLua buffers<CR>', { desc = 'Buffers' })
+    end
 end
 
 local fugitive_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/vim-fugitive')
 
 if vim.fn.isdirectory(fugitive_dir) == 1 then
     -- Load the plugin via native package manager
-    vim.cmd('packadd vim-fugitive')
+    local fugitive_loaded = pcall(vim.cmd, 'packadd vim-fugitive')
 
-    -- Set up basic keymaps for common Git actions
-    vim.keymap.set('n', '<leader>gs', '<cmd>Git<CR>', { desc = 'Git Status summary' })
-    vim.keymap.set('n', '<leader>gd', '<cmd>Gdiffsplit<CR>', { desc = 'Git Diff split' })
-    vim.keymap.set('n', '<leader>gb', '<cmd>Git blame<CR>', { desc = 'Git Blame' })
+    if fugitive_loaded then
+        -- Set up basic keymaps for common Git actions
+        vim.keymap.set('n', '<leader>gs', '<cmd>Git<CR>', { desc = 'Git Status summary' })
+        vim.keymap.set('n', '<leader>gd', '<cmd>Gdiffsplit<CR>', { desc = 'Git Diff split' })
+        vim.keymap.set('n', '<leader>gb', '<cmd>Git blame<CR>', { desc = 'Git Blame' })
+    end
 end
 
 local diffs_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/diffs.nvim')
 
 if vim.fn.isdirectory(diffs_dir) == 1 then
     -- Load the plugin via native package manager
-    vim.cmd('packadd diffs.nvim')
+    pcall(vim.cmd, 'packadd diffs.nvim')
 end
