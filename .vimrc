@@ -143,7 +143,12 @@ if has("patch-9.1.1590")
     set complete=o
 endif
 set completeopt=menuone,noinsert,noselect
-set completeopt+=fuzzy
+" The fuzzy completeopt value was added after Vim 9.0. Keep the declared Vim 9+
+" baseline usable without tying this config to a particular patch release.
+try
+    set completeopt+=fuzzy
+catch /^Vim\%((\a\+)\)\=:E474/
+endtry
 
 inoremap <C-Space> <C-x><C-o>
 
