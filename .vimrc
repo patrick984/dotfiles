@@ -453,7 +453,7 @@ nnoremap <leader>gs :call OptionalCommand('Git')<CR>
 "=========================================================
 " Plugins
 "=========================================================
-if exists('*plug#begin')
+if exists('*plug#begin') || !empty(globpath(&runtimepath, 'autoload/plug.vim'))
 call plug#begin('~/.vim/plugged')
 
 Plug 'tpope/vim-unimpaired'
