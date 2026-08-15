@@ -342,14 +342,14 @@ vim.api.nvim_create_autocmd({ "ModeChanged" }, {
 -- ========================================================================== --
 vim.lsp.config("*", {
     root_markers = {
+        {
+            "Cargo.toml",
+            "go.mod",
+            "package.json",
+            "pyproject.toml",
+            "compile_commands.json",
+        },
         ".git",
-        "Cargo.toml",
-        "go.mod",
-        "package.json",
-        "pyproject.toml",
-        "compile_commands.json",
-        "*.sln",
-        "*.csproj",
     },
 })
 
@@ -391,10 +391,30 @@ vim.api.nvim_create_autocmd("LspAttach", {
         end
 
         vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-        vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = "Go to declaration" })
+        vim.keymap.set('n', 'gD', vim.lsp.buf.declaration,
+            { buffer = bufnr, desc = "Go to declaration" })
         vim.keymap.set("n", "<leader>cs", vim.lsp.buf.workspace_symbol, opts)
-        if client.name == "clangd" and vim.fn.exists(":ClangdSwitchSourceHeader") == 2 then
-            vim.keymap.set("n", "<leader>cc", "<cmd>ClangdSwitchSourceHeader<cr>", { buffer = bufnr, desc = "Switch Source/Header" })
+        if client.name == "clangd" then
+            vim.keymap.set("n", "<leader>cc", function()
+                local method = "textDocument/switchSourceHeader"
+                if not client:supports_method(method) then
+                    vim.notify("clangd does not support source/header switching", vim.log.levels.WARN)
+                    return
+                end
+
+                local params = vim.lsp.util.make_text_document_params(bufnr)
+                client:request(method, params, function(err, result)
+                    if err then
+                        vim.notify(err.message or tostring(err), vim.log.levels.ERROR)
+                    elseif not result or result == "" then
+                        vim.notify("No corresponding source/header file found", vim.log.levels.INFO)
+                    else
+                        vim.schedule(function()
+                            vim.cmd.edit(vim.fn.fnameescape(vim.uri_to_fname(result)))
+                        end)
+                    end
+                end, bufnr)
+            end, { buffer = bufnr, desc = "Switch Source/Header" })
         end
         vim.keymap.set("n", "<leader>cf", function()
                 vim.lsp.buf.format({ bufnr = bufnr, async = true })
@@ -487,6 +507,28 @@ enable_lsp_if_available("ols", "ols", {
 enable_lsp_if_available("clangd", "clangd", {
     cmd = { "clangd" },
     filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+    root_markers = {
+        ".clangd",
+        ".clang-tidy",
+        ".clang-format",
+        "compile_commands.json",
+        "compile_flags.txt",
+        "configure.ac",
+        ".git",
+    },
+    capabilities = {
+        textDocument = {
+            completion = {
+                editsNearCursor = true,
+            },
+        },
+        offsetEncoding = { "utf-8", "utf-16" },
+    },
+    on_init = function(client, init_result)
+        if init_result.offsetEncoding then
+            client.offset_encoding = init_result.offsetEncoding
+        end
+    end,
 })
 
 enable_lsp_if_available("rust_analyzer", "rust-analyzer", {
@@ -525,10 +567,89 @@ enable_lsp_if_available("jsonls", "vscode-json-language-server", {
     filetypes = { "json", "jsonc" },
 })
 
+local roslyn_diagnostic_group = vim.api.nvim_create_augroup("RoslynDiagnostics", { clear = true })
+
+local function refresh_roslyn_diagnostics(client)
+    local registrations = client.dynamic_capabilities.capabilities.diagnosticProvider or {}
+
+    for bufnr in pairs(client.attached_buffers) do
+        if vim.api.nvim_buf_is_loaded(bufnr) then
+            for _, registration in pairs(registrations) do
+                local options = registration.registerOptions or {}
+                client:request("textDocument/diagnostic", {
+                    identifier = options.identifier,
+                    textDocument = vim.lsp.util.make_text_document_params(bufnr),
+                }, nil, bufnr)
+            end
+        end
+    end
+end
+
 enable_lsp_if_available("roslyn", "roslyn-language-server", {
     cmd = { "roslyn-language-server", "--stdio" },
-    filetypes = { "cs", "razor" },
-    root_markers = { "*.sln", "*.csproj", ".git" },
+    filetypes = { "cs" },
+    root_dir = function(bufnr, on_dir)
+        local root = vim.fs.root(bufnr, function(name)
+            return name:match("%.slnx?$") ~= nil
+        end)
+
+        if not root then
+            root = vim.fs.root(bufnr, function(name)
+                return name:match("%.csproj$") ~= nil
+            end)
+        end
+
+        if root then
+            on_dir(root)
+        end
+    end,
+    capabilities = {
+        textDocument = {
+            diagnostic = {
+                dynamicRegistration = true,
+            },
+        },
+    },
+    on_init = function(client)
+        local root = client.root_dir
+        if not root then return end
+
+        local projects = {}
+        for name, kind in vim.fs.dir(root) do
+            if kind == "file" and (vim.endswith(name, ".sln") or vim.endswith(name, ".slnx")) then
+                client:notify("solution/open", {
+                    solution = vim.uri_from_fname(vim.fs.joinpath(root, name)),
+                })
+                return
+            elseif kind == "file" and vim.endswith(name, ".csproj") then
+                table.insert(projects, vim.uri_from_fname(vim.fs.joinpath(root, name)))
+            end
+        end
+
+        if #projects > 0 then
+            client:notify("project/open", { projects = projects })
+        end
+    end,
+    handlers = {
+        ["workspace/projectInitializationComplete"] = function(_, _, ctx)
+            local client = vim.lsp.get_client_by_id(ctx.client_id)
+            if client then
+                refresh_roslyn_diagnostics(client)
+            end
+            return vim.NIL
+        end,
+    },
+    on_attach = function(client, bufnr)
+        vim.api.nvim_clear_autocmds({ group = roslyn_diagnostic_group, buffer = bufnr })
+        vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
+            group = roslyn_diagnostic_group,
+            buffer = bufnr,
+            callback = function()
+                refresh_roslyn_diagnostics(client)
+            end,
+            desc = "Refresh Roslyn diagnostics",
+        })
+    end,
     settings = {
         ["csharp|inlay_hints"] = {
             csharp_enable_inlay_hints_for_implicit_object_creation = true,
