@@ -221,7 +221,7 @@ vim.api.nvim_set_hl(0, "@lsp.typemod.function.definition", { bold = true })
 vim.api.nvim_set_hl(0, "@lsp.type.operator", { fg = "#000000" })
 
 -- GUI cursor config
-vim.opt.guicursor = 'n-v-c:block,i-ci-ve:ver25-iCursor,r-cr-o:hor20'
+vim.opt.guicursor = 'n-v-c:block-Cursor,i-ci-ve:ver25-iCursor,r-cr-o:hor20'
 vim.api.nvim_set_hl(0, "Cursor", { fg = "NONE", bg = "#0366d6" })
 vim.api.nvim_set_hl(0, "iCursor", { fg = "NONE", bg = "#DD0000" })
 
