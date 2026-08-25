@@ -8,6 +8,7 @@ vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
+vim.opt.wildignorecase = true
 vim.opt.hidden = true
 vim.opt.updatetime = 250
 vim.opt.tabstop = 4
