@@ -682,6 +682,15 @@ if vim.fn.isdirectory(fzf_dir) == 1 then
 
     local fzf_ok, fzf_lua = pcall(require, 'fzf-lua')
     if fzf_loaded and fzf_ok then
+        local function fzf_project_history(picker)
+            local root = vim.fs.root(0, { ".git", ".hg", ".svn" }) or vim.fn.getcwd()
+            root = vim.uv.fs_realpath(root) or root
+            local project_id = vim.fs.basename(root) .. "-" .. vim.fn.sha256(root):sub(1, 16)
+            local history_dir = vim.fn.stdpath("data") .. "/fzf-history/projects/" .. project_id
+            vim.fn.mkdir(history_dir, "p")
+            return history_dir .. "/" .. picker
+        end
+
         -- Initialize the plugin settings
         fzf_lua.setup({
             fzf_colors = true,
@@ -707,9 +716,17 @@ if vim.fn.isdirectory(fzf_dir) == 1 then
         })
 
         -- Set up keymaps
-        vim.keymap.set('n', '<c-p>', '<cmd>FzfLua files<CR>', { desc = 'Find Files' })
-        vim.keymap.set('n', '<leader>ff', '<cmd>FzfLua files<CR>', { desc = 'Find Files' })
-        vim.keymap.set('n', '<leader>fg', '<cmd>FzfLua live_grep<CR>', { desc = 'Live Grep' })
+        local function find_files()
+            fzf_lua.files({ fzf_opts = { ["--history"] = fzf_project_history("files") } })
+        end
+
+        local function live_grep()
+            fzf_lua.live_grep({ fzf_opts = { ["--history"] = fzf_project_history("live-grep") } })
+        end
+
+        vim.keymap.set('n', '<c-p>', find_files, { desc = 'Find Files' })
+        vim.keymap.set('n', '<leader>ff', find_files, { desc = 'Find Files' })
+        vim.keymap.set('n', '<leader>fg', live_grep, { desc = 'Live Grep' })
         vim.keymap.set('n', '<leader>fb', '<cmd>FzfLua buffers<CR>', { desc = 'Buffers' })
     end
 end
