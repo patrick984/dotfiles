@@ -424,20 +424,29 @@ function! FzfProjectHistoryDir()
     return l:history_dir
 endfunction
 
+function! RunWithFzfProjectHistory(command)
+    let g:fzf_history_dir = FzfProjectHistoryDir()
+    let l:fzf_default_opts = $FZF_DEFAULT_OPTS
+    let $FZF_DEFAULT_OPTS = l:fzf_default_opts
+                \ . ' --bind=ctrl-p:prev-history,ctrl-n:next-history'
+    try
+        execute a:command
+    finally
+        let $FZF_DEFAULT_OPTS = l:fzf_default_opts
+    endtry
+endfunction
+
 function! FindFile()
     if exists(':Files') == 2
-        let g:fzf_history_dir = FzfProjectHistoryDir()
-        Files
+        call RunWithFzfProjectHistory('Files')
     elseif exists(':FZF') == 2
-        let g:fzf_history_dir = FzfProjectHistoryDir()
-        FZF
+        call RunWithFzfProjectHistory('FZF')
     endif
 endfunction
 
 function! ProjectGrep()
     if exists(':Rg') == 2
-        let g:fzf_history_dir = FzfProjectHistoryDir()
-        Rg
+        call RunWithFzfProjectHistory('Rg')
     elseif executable('rg')
         let l:pattern = input('rg: ')
         if !empty(l:pattern)
