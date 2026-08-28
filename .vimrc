@@ -405,16 +405,38 @@ let g:fzf_vim.preview_window = ['up,50%', 'ctrl-/']
 "=========================================================
 " Optional plugin helpers
 "=========================================================
+function! FzfProjectHistoryDir()
+    let l:cwd = getcwd()
+    let l:marker = finddir('.git', l:cwd . ';')
+    if empty(l:marker)
+        let l:marker = finddir('.hg', l:cwd . ';')
+    endif
+    if empty(l:marker)
+        let l:marker = finddir('.svn', l:cwd . ';')
+    endif
+
+    let l:root = empty(l:marker) ? l:cwd : fnamemodify(l:marker, ':p:h:h')
+    let l:project_id = exists('*sha256')
+                \ ? fnamemodify(l:root, ':t') . '-' . strpart(sha256(resolve(l:root)), 0, 16)
+                \ : substitute(resolve(l:root), '[^A-Za-z0-9_.-]', '_', 'g')
+    let l:history_dir = expand('~/.local/share/fzf-history/projects/' . l:project_id)
+    call mkdir(l:history_dir, 'p')
+    return l:history_dir
+endfunction
+
 function! FindFile()
     if exists(':Files') == 2
+        let g:fzf_history_dir = FzfProjectHistoryDir()
         Files
     elseif exists(':FZF') == 2
+        let g:fzf_history_dir = FzfProjectHistoryDir()
         FZF
     endif
 endfunction
 
 function! ProjectGrep()
     if exists(':Rg') == 2
+        let g:fzf_history_dir = FzfProjectHistoryDir()
         Rg
     elseif executable('rg')
         let l:pattern = input('rg: ')
