@@ -19,6 +19,26 @@ vim.opt.linebreak = true
 vim.g.netrw_winsize = 30
 vim.g.netrw_altv = 1
 
+local autosync_group = vim.api.nvim_create_augroup("AutoSaveAndReload", { clear = true })
+
+vim.api.nvim_create_autocmd({ "FocusLost", "VimSuspend" }, {
+  group = autosync_group,
+  callback = function()
+    vim.cmd("wall")
+  end,
+  desc = "Save modified buffers when leaving Neovim",
+})
+
+vim.api.nvim_create_autocmd({ "FocusGained", "VimResume" }, {
+  group = autosync_group,
+  callback = function()
+    vim.schedule(function()
+      vim.cmd("checktime")
+    end)
+  end,
+  desc = "Reload externally changed files when returning to Neovim",
+})
+
 if vim.env.COLORTERM == "truecolor" or vim.env.COLORTERM == "24bit" then
   vim.opt.termguicolors = true
 else
@@ -29,10 +49,6 @@ end
 vim.opt.path:append("**")          -- Search recursively down through all subdirectories
 vim.opt.wildignore:append({ "**/.DS_Store", "**/node_modules/**", "**/.git/**", "**/.cache/**", "**/target/**", "**/bin/**", "**/obj/**" }) -- Skip heavy folders
 vim.opt.wildmode = "longest:full,full" -- Smooth Tab completion behavior in the command line
-
--- Buffer navigation in Normal Mode
-vim.keymap.set("n", "<Tab>", ":bnext<CR>", { silent = true, desc = "Next buffer" })
-vim.keymap.set("n", "<S-Tab>", ":bprevious<CR>", { silent = true, desc = "Previous buffer" })
 
 -- Split navigation
 vim.keymap.set("n", "<leader>e", "<cmd>Lex!<CR>", { silent = true, desc = "Open file explorer"})
@@ -355,17 +371,103 @@ vim.lsp.config("*", {
 })
 
 vim.diagnostic.config({
-    virtual_text = true,
+    virtual_text = false,
     signs = true,
     underline = true,
     update_in_insert = false,
     severity_sort = true,
 })
 
+local diagnostic_popup_group = vim.api.nvim_create_augroup("DiagnosticPopup", { clear = true })
+
+local diagnostic_severity_names = {
+    [vim.diagnostic.severity.ERROR] = "Error",
+    [vim.diagnostic.severity.WARN] = "Warning",
+    [vim.diagnostic.severity.INFO] = "Info",
+    [vim.diagnostic.severity.HINT] = "Hint",
+}
+
+local function show_line_diagnostics()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local line = vim.api.nvim_win_get_cursor(0)[1] - 1
+    local diagnostics = vim.diagnostic.get(bufnr, { lnum = line })
+
+    if #diagnostics == 0 then
+        return
+    end
+
+    table.sort(diagnostics, function(left, right)
+        if left.severity ~= right.severity then
+            return left.severity < right.severity
+        end
+        return (left.col or 0) < (right.col or 0)
+    end)
+
+    local seen = {}
+    local contents = {}
+
+    for _, diagnostic in ipairs(diagnostics) do
+        local key = table.concat({
+            diagnostic.message,
+            tostring(diagnostic.severity),
+            tostring(diagnostic.code),
+            tostring(diagnostic.lnum),
+            tostring(diagnostic.col),
+            tostring(diagnostic.end_lnum),
+            tostring(diagnostic.end_col),
+        }, "\0")
+
+        if not seen[key] then
+            seen[key] = true
+
+            if #contents > 0 then
+                table.insert(contents, "")
+            end
+
+            local severity = diagnostic_severity_names[diagnostic.severity] or "Diagnostic"
+            local metadata = {}
+            if diagnostic.source and diagnostic.source ~= "" then
+                table.insert(metadata, diagnostic.source)
+            end
+            if diagnostic.code ~= nil then
+                table.insert(metadata, tostring(diagnostic.code))
+            end
+
+            local message_lines = vim.split(diagnostic.message, "\n", { plain = true })
+            local suffix = #metadata > 0 and " (" .. table.concat(metadata, ", ") .. ")" or ""
+            message_lines[1] = severity .. ": " .. message_lines[1]
+            message_lines[#message_lines] = message_lines[#message_lines] .. suffix
+            vim.list_extend(contents, message_lines)
+        end
+    end
+
+    local max_width = math.max(20, math.min(100, vim.o.columns - 4))
+    vim.lsp.util.open_floating_preview(contents, "plaintext", {
+        border = "single",
+        focusable = false,
+        max_width = max_width,
+        max_height = math.max(4, math.floor(vim.o.lines * 0.4)),
+        wrap = true,
+        wrap_at = max_width,
+        close_events = { "BufHidden", "CursorMoved", "InsertEnter" },
+    })
+end
+
+vim.api.nvim_create_autocmd("CursorHold", {
+    group = diagnostic_popup_group,
+    callback = show_line_diagnostics,
+    desc = "Show diagnostics for the current line",
+})
+
+vim.keymap.set("n", "<leader>cd", show_line_diagnostics, {
+    desc = "Show line diagnostics",
+})
+
 local format_sync_group = vim.api.nvim_create_augroup("LspFormatOnSave", { clear = true })
 
 -- Formatting is opt-in per language. Add a filetype here when you want it.
 local format_on_save_filetypes = {
+    cs = true,
     -- python = true,
     -- go = true,
     -- rust = true,
@@ -570,10 +672,10 @@ enable_lsp_if_available("jsonls", "vscode-json-language-server", {
 
 local roslyn_diagnostic_group = vim.api.nvim_create_augroup("RoslynDiagnostics", { clear = true })
 
-local function refresh_roslyn_diagnostics(client)
+local function refresh_roslyn_diagnostics(client, target_bufnr)
     local registrations = client.dynamic_capabilities.capabilities.diagnosticProvider or {}
 
-    for bufnr in pairs(client.attached_buffers) do
+    local function refresh_buffer(bufnr)
         if vim.api.nvim_buf_is_loaded(bufnr) then
             for _, registration in pairs(registrations) do
                 local options = registration.registerOptions or {}
@@ -584,6 +686,33 @@ local function refresh_roslyn_diagnostics(client)
             end
         end
     end
+
+    if target_bufnr then
+        if client.attached_buffers[target_bufnr] then
+            refresh_buffer(target_bufnr)
+        end
+        return
+    end
+
+    for bufnr in pairs(client.attached_buffers) do
+        refresh_buffer(bufnr)
+    end
+end
+
+local roslyn_diagnostic_refresh_generation = {}
+
+local function schedule_roslyn_diagnostic_refresh(client, bufnr)
+    local generation = (roslyn_diagnostic_refresh_generation[bufnr] or 0) + 1
+    roslyn_diagnostic_refresh_generation[bufnr] = generation
+
+    vim.defer_fn(function()
+        if roslyn_diagnostic_refresh_generation[bufnr] ~= generation
+            or not vim.api.nvim_buf_is_valid(bufnr) then
+            return
+        end
+
+        refresh_roslyn_diagnostics(client, bufnr)
+    end, 200)
 end
 
 enable_lsp_if_available("roslyn", "roslyn-language-server", {
@@ -646,9 +775,28 @@ enable_lsp_if_available("roslyn", "roslyn-language-server", {
             group = roslyn_diagnostic_group,
             buffer = bufnr,
             callback = function()
-                refresh_roslyn_diagnostics(client)
+                -- Cancel any pending debounce before refreshing immediately.
+                roslyn_diagnostic_refresh_generation[bufnr] =
+                    (roslyn_diagnostic_refresh_generation[bufnr] or 0) + 1
+                refresh_roslyn_diagnostics(client, bufnr)
             end,
             desc = "Refresh Roslyn diagnostics",
+        })
+        vim.api.nvim_create_autocmd("TextChanged", {
+            group = roslyn_diagnostic_group,
+            buffer = bufnr,
+            callback = function()
+                schedule_roslyn_diagnostic_refresh(client, bufnr)
+            end,
+            desc = "Refresh Roslyn diagnostics after normal-mode edits",
+        })
+        vim.api.nvim_create_autocmd("BufWipeout", {
+            group = roslyn_diagnostic_group,
+            buffer = bufnr,
+            callback = function()
+                roslyn_diagnostic_refresh_generation[bufnr] = nil
+            end,
+            desc = "Clear Roslyn diagnostic refresh state",
         })
     end,
     settings = {
