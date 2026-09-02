@@ -82,8 +82,8 @@ set smartcase
 set splitbelow
 set splitright
 
-nnoremap <silent> <Tab> <cmd>update<CR><cmd>bnext<CR>
-nnoremap <silent> <S-Tab> <cmd>update<CR><cmd>bprevious<CR>
+nnoremap <silent> [b <cmd>bprevious<CR>
+nnoremap <silent> ]b <cmd>bnext<CR>
 
 let g:netrw_winsize = 30
 autocmd FileType netrw wincmd L
