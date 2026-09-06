@@ -899,3 +899,16 @@ if vim.fn.isdirectory(diffs_dir) == 1 then
     -- Load the plugin via native package manager
     pcall(vim.cmd, 'packadd diffs.nvim')
 end
+
+local grug_far_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/grug-far.nvim')
+
+if vim.fn.isdirectory(grug_far_dir) == 1 and vim.fn.executable('rg') == 1 then
+    -- grug-far uses ripgrep for project-wide search and replace.
+    local grug_far_loaded = pcall(vim.cmd, 'packadd grug-far.nvim')
+    local grug_far_ok, grug_far = pcall(require, 'grug-far')
+
+    if grug_far_loaded and grug_far_ok then
+        vim.keymap.set('n', '<leader>sr', grug_far.open, { desc = 'Search and replace' })
+        vim.keymap.set('x', '<leader>sr', grug_far.open, { desc = 'Search and replace selection' })
+    end
+end

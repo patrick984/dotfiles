@@ -78,6 +78,9 @@ formatting.
    language servers are installed.
 4. Optional plugin commands must be guarded so missing plugins do not break
    startup.
+5. `grug-far.nvim` is supported when installed as
+   `~/.config/nvim/pack/plugins/opt/grug-far.nvim` alongside `rg`; use
+   `<leader>sr` for project search and replace.
 
 ### Vim
 
