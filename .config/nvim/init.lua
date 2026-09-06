@@ -908,6 +908,13 @@ if vim.fn.isdirectory(grug_far_dir) == 1 and vim.fn.executable('rg') == 1 then
     local grug_far_ok, grug_far = pcall(require, 'grug-far')
 
     if grug_far_loaded and grug_far_ok then
+        grug_far.setup({
+            windowCreationCommand = 'rightbelow vsplit',
+            openTargetWindow = {
+                preferredLocation = 'prev',
+            },
+        })
+
         vim.keymap.set('n', '<leader>sr', grug_far.open, { desc = 'Search and replace' })
         vim.keymap.set('x', '<leader>sr', grug_far.open, { desc = 'Search and replace selection' })
     end
