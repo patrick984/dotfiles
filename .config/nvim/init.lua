@@ -18,6 +18,8 @@ vim.opt.wrap = true
 vim.opt.linebreak = true
 vim.g.netrw_winsize = 30
 vim.g.netrw_altv = 1
+vim.g.netrw_banner = 0
+vim.g.netrw_liststyle = 3
 
 local autosync_group = vim.api.nvim_create_augroup("AutoSaveAndReload", { clear = true })
 
