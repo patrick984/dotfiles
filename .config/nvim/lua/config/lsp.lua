@@ -127,6 +127,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
         if not client then return end
 
         if client:supports_method("textDocument/completion") then
+            if client.name == "roslyn" then
+                local completion = client.server_capabilities.completionProvider
+                completion.triggerCharacters = vim.tbl_filter(function(character)
+                    return character ~= "(" and character ~= " "
+                end, completion.triggerCharacters or {})
+            end
+
             vim.lsp.completion.enable(true, client.id, bufnr, {
                 autotrigger = true,
             })
