@@ -92,7 +92,38 @@ return {
         end,
     },
     on_attach = function(client, bufnr)
+        local completion = client.server_capabilities.completionProvider
+        if completion and completion.triggerCharacters then
+            completion.triggerCharacters = vim.tbl_filter(function(character)
+                return character ~= "(" and character ~= " "
+            end, completion.triggerCharacters)
+        end
+
         vim.api.nvim_clear_autocmds({ group = diagnostic_group, buffer = bufnr })
+        if client:supports_method("textDocument/signatureHelp") then
+            vim.api.nvim_create_autocmd("InsertCharPre", {
+                group = diagnostic_group,
+                buffer = bufnr,
+                callback = function()
+                    if vim.v.char ~= "(" and vim.v.char ~= "," then
+                        return
+                    end
+
+                    vim.schedule(function()
+                        if vim.api.nvim_get_current_buf() == bufnr
+                            and vim.api.nvim_get_mode().mode:sub(1, 1) == "i" then
+                            vim.lsp.buf.signature_help({
+                                border = "single",
+                                focusable = false,
+                                silent = true,
+                            })
+                        end
+                    end)
+                end,
+                desc = "Show Roslyn signature help in argument lists",
+            })
+        end
+
         vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
             group = diagnostic_group,
             buffer = bufnr,
