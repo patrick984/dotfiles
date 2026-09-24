@@ -92,13 +92,6 @@ return {
         end,
     },
     on_attach = function(client, bufnr)
-        local completion = client.server_capabilities.completionProvider
-        if completion and completion.triggerCharacters then
-            completion.triggerCharacters = vim.tbl_filter(function(character)
-                return character ~= "(" and character ~= " "
-            end, completion.triggerCharacters)
-        end
-
         vim.api.nvim_clear_autocmds({ group = diagnostic_group, buffer = bufnr })
         if client:supports_method("textDocument/signatureHelp") then
             vim.api.nvim_create_autocmd("InsertCharPre", {
