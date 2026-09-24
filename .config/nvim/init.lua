@@ -249,6 +249,9 @@ vim.api.nvim_set_hl(0, "@lsp.typemod.function.definition", { bold = true })
 vim.api.nvim_set_hl(0, "@lsp.type.operator", { fg = "#000000" })
 -- Let C# syntax groups such as csTodo show through Roslyn's whole-comment token.
 vim.api.nvim_set_hl(0, "@lsp.type.comment.cs", {})
+vim.api.nvim_set_hl(0, "@lsp.type.recordClass.cs", { link = "Type" })
+vim.api.nvim_set_hl(0, "@lsp.type.recordStruct.cs", { link = "Type" })
+vim.api.nvim_set_hl(0, "@lsp.type.extensionMethod.cs", { link = "Function" })
 vim.api.nvim_set_hl(0, "CSharpMethodDefinition", { bold = true })
 
 -- GUI cursor config
