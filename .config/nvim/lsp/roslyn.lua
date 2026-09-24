@@ -3,6 +3,12 @@ local refresh_generation = {}
 local definition_namespace = vim.api.nvim_create_namespace("RoslynMethodDefinitions")
 local definition_refresh_generation = {}
 
+local function is_decompiled(bufname)
+    local _, marker_end = bufname:find("[/\\]MetadataAsSource[/\\]")
+    if not marker_end then return false end
+    return vim.fn.finddir(bufname:sub(1, marker_end), vim.uv.os_tmpdir()) ~= ""
+end
+
 local definition_kinds = {
     [vim.lsp.protocol.SymbolKind.Function] = true,
     [vim.lsp.protocol.SymbolKind.Method] = true,
@@ -169,9 +175,34 @@ local function schedule_refresh(client, bufnr)
 end
 
 return {
-    cmd = { "roslyn-language-server", "--stdio" },
+    cmd = {
+        vim.fn.executable("Microsoft.CodeAnalysis.LanguageServer") == 1
+            and "Microsoft.CodeAnalysis.LanguageServer"
+            or "roslyn-language-server",
+        "--stdio",
+    },
+    cmd_env = {
+        -- Roslyn reports decompiled files beneath TMPDIR; resolve symlinks so
+        -- those paths match on macOS and other systems with a linked temp dir.
+        TMPDIR = vim.env.TMPDIR and vim.env.TMPDIR ~= ""
+            and vim.fn.resolve(vim.env.TMPDIR)
+            or nil,
+    },
     filetypes = { "cs" },
     root_dir = function(bufnr, on_dir)
+        local bufname = vim.api.nvim_buf_get_name(bufnr)
+        if is_decompiled(bufname) then
+            local previous = vim.fn.bufnr("#")
+            local client = vim.lsp.get_clients({
+                name = "roslyn",
+                bufnr = previous ~= -1 and previous or nil,
+            })[1]
+            if client then
+                on_dir(client.config.root_dir)
+            end
+            return
+        end
+
         local root = vim.fs.root(bufnr, function(name)
             return name:match("%.slnx?$") ~= nil
         end)
@@ -217,6 +248,26 @@ return {
         end,
     },
     commands = {
+        ["roslyn.client.completionComplexEdit"] = function(command, ctx)
+            local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
+            local arguments = command.arguments or {}
+            local uri, edit = arguments[1], arguments[2]
+
+            if uri and uri.uri and edit and edit.range and edit.newText then
+                vim.lsp.util.apply_workspace_edit({
+                    changes = {
+                        [uri.uri] = {
+                            { range = edit.range, newText = edit.newText },
+                        },
+                    },
+                }, client.offset_encoding)
+            else
+                vim.notify(
+                    "Roslyn returned an invalid complex completion edit",
+                    vim.log.levels.WARN
+                )
+            end
+        end,
         ["roslyn.client.fixAllCodeAction"] = function(command, ctx)
             local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
             handle_fix_all(client, command, ctx.bufnr)
@@ -292,6 +343,14 @@ return {
         })
     end,
     settings = {
+        ["csharp|symbol_search"] = {
+            dotnet_search_reference_assemblies = true,
+        },
+        ["csharp|completion"] = {
+            dotnet_show_name_completion_suggestions = true,
+            dotnet_show_completion_items_from_unimported_namespaces = true,
+            dotnet_provide_regex_completions = true,
+        },
         ["csharp|inlay_hints"] = {
             csharp_enable_inlay_hints_for_implicit_object_creation = true,
             csharp_enable_inlay_hints_for_implicit_variable_types = true,
