@@ -3,6 +3,38 @@ local refresh_generation = {}
 local definition_namespace = vim.api.nvim_create_namespace("RoslynMethodDefinitions")
 local definition_refresh_generation = {}
 
+local markdown_escapable = [[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]]
+
+local function unescape_markdown_prose(value)
+    local in_fence = false
+    local lines = vim.split(value, "\n", { plain = true })
+
+    for index, line in ipairs(lines) do
+        if line:match("^%s*```") or line:match("^%s*~~~") then
+            in_fence = not in_fence
+        elseif not in_fence then
+            lines[index] = line:gsub("\\(.)", function(character)
+                if markdown_escapable:find(character, 1, true) then
+                    return character
+                end
+                return "\\" .. character
+            end)
+        end
+    end
+
+    return table.concat(lines, "\n")
+end
+
+local function handle_hover(err, result, ctx, config)
+    if result and type(result.contents) == "table"
+        and result.contents.kind == "markdown"
+        and type(result.contents.value) == "string" then
+        result.contents.value = unescape_markdown_prose(result.contents.value)
+    end
+
+    return vim.lsp.handlers.hover(err, result, ctx, config)
+end
+
 local function is_decompiled(bufname)
     local _, marker_end = bufname:find("[/\\]MetadataAsSource[/\\]")
     if not marker_end then return false end
@@ -239,6 +271,7 @@ return {
         end
     end,
     handlers = {
+        ["textDocument/hover"] = handle_hover,
         ["workspace/projectInitializationComplete"] = function(_, _, ctx)
             local client = vim.lsp.get_client_by_id(ctx.client_id)
             if client then
@@ -279,6 +312,12 @@ return {
     },
     on_attach = function(client, bufnr)
         vim.api.nvim_clear_autocmds({ group = diagnostic_group, buffer = bufnr })
+        vim.keymap.set("n", "K", function()
+            client:request("textDocument/hover", vim.lsp.util.make_position_params(
+                0, client.offset_encoding
+            ), handle_hover, bufnr)
+        end, { buffer = bufnr, desc = "Show Roslyn hover documentation" })
+
         if client:supports_method("textDocument/documentSymbol") then
             schedule_definition_refresh(client, bufnr)
             vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave", "TextChanged" }, {
