@@ -30,12 +30,30 @@ copy_file() {
     printf 'install %s -> %s\n' "$src" "$dst_path"
 }
 
+copy_tree_files() {
+    local src="$1"
+    local dst="$2"
+    local src_root="$repo_dir/$src"
+    local src_path
+    local relative_path
+
+    if [[ ! -d "$src_root" ]]; then
+        printf 'skip missing %s\n' "$src" >&2
+        return
+    fi
+
+    while IFS= read -r -d '' src_path; do
+        relative_path="${src_path#"$src_root"/}"
+        copy_file "$src/$relative_path" "$dst/$relative_path"
+    done < <(find "$src_root" -type f -print0)
+}
+
 copy_file ".shell_common" ".shell_common"
 copy_file ".bashrc" ".bashrc"
 copy_file ".zshrc" ".zshrc"
 copy_file ".tmux.conf" ".tmux.conf"
 copy_file ".vimrc" ".vimrc"
 copy_file ".vim/colors/light_custom.vim" ".vim/colors/light_custom.vim"
-copy_file ".config/nvim/init.lua" ".config/nvim/init.lua"
+copy_tree_files ".config/nvim" ".config/nvim"
 
 printf 'done\n'
