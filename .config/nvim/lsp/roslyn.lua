@@ -61,6 +61,71 @@ local function schedule_definition_refresh(client, bufnr)
     end, 200)
 end
 
+local function apply_code_action(client, action)
+    if action.edit then
+        vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+    end
+    if action.command then
+        client:exec_cmd(action.command)
+    end
+end
+
+local function handle_fix_all(client, command, bufnr)
+    local data = command.arguments and command.arguments[1]
+    local scopes = type(data) == "table" and data.FixAllFlavors or nil
+    if type(scopes) ~= "table" or vim.tbl_isempty(scopes) then
+        vim.notify("Roslyn did not provide any Fix All scopes", vim.log.levels.WARN)
+        return
+    end
+
+    vim.ui.select(scopes, { prompt = "Fix All Scope:" }, function(scope)
+        if not scope then return end
+
+        client:request("codeAction/resolveFixAll", {
+            title = command.title,
+            data = data,
+            scope = scope,
+        }, function(err, resolved)
+            if err then
+                vim.notify(err.message or tostring(err), vim.log.levels.ERROR)
+            elseif resolved then
+                apply_code_action(client, resolved)
+            end
+        end, bufnr)
+    end)
+end
+
+local function handle_nested_action(client, action, bufnr)
+    if not action then return end
+
+    if action.data and not action.edit and not action.command then
+        client:request("codeAction/resolve", action, function(err, resolved)
+            if err then
+                vim.notify(err.message or tostring(err), vim.log.levels.ERROR)
+            elseif resolved then
+                handle_nested_action(client, resolved, bufnr)
+            end
+        end, bufnr)
+        return
+    end
+
+    local nested = vim.islist(action) and action or action.NestedCodeActions
+    if type(nested) ~= "table" or vim.tbl_isempty(nested) then
+        apply_code_action(client, action)
+    elseif #nested == 1 then
+        handle_nested_action(client, nested[1], bufnr)
+    else
+        vim.ui.select(nested, {
+            prompt = action.title or "Select code action:",
+            format_item = function(item)
+                return item.title or (item.command and item.command.title) or "Unnamed action"
+            end,
+        }, function(choice)
+            handle_nested_action(client, choice, bufnr)
+        end)
+    end
+end
+
 local function refresh_diagnostics(client, target_bufnr)
     local registrations = client.dynamic_capabilities.capabilities.diagnosticProvider or {}
 
@@ -149,6 +214,16 @@ return {
                 refresh_diagnostics(client)
             end
             return vim.NIL
+        end,
+    },
+    commands = {
+        ["roslyn.client.fixAllCodeAction"] = function(command, ctx)
+            local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
+            handle_fix_all(client, command, ctx.bufnr)
+        end,
+        ["roslyn.client.nestedCodeAction"] = function(command, ctx)
+            local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
+            handle_nested_action(client, command.arguments and command.arguments[1], ctx.bufnr)
         end,
     },
     on_attach = function(client, bufnr)
