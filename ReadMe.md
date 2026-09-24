@@ -33,6 +33,15 @@ The installer copies files into `$HOME`, creates parent directories, and backs u
 existing destination files with a timestamped `.bak.YYYYMMDD-HHMMSS` suffix. It
 does not create symlinks.
 
+Preview or remove backups previously created by the installer:
+
+```sh
+./cleanup-backups.sh --dry-run
+./cleanup-backups.sh
+```
+
+Use `./cleanup-backups.sh --yes` for non-interactive cleanup.
+
 ## Optional Tools
 
 The configs auto-use these tools when installed and fall back gracefully when
