@@ -82,8 +82,36 @@ end,
 { expr = true, noremap = true, desc = "Next completion item or insert tab" })
 
 vim.keymap.set("i", "<C-Space>", function()
+    local completion = vim.fn.complete_info({ "selected" })
+    if vim.fn.pumvisible() == 1 and completion.selected == -1 then
+        vim.api.nvim_feedkeys(vim.keycode("<C-n>"), "n", false)
+        return
+    end
+
+    local bufnr = vim.api.nvim_get_current_buf()
+    local attempts = 0
+    local function select_first_result()
+        if vim.api.nvim_get_current_buf() ~= bufnr
+            or vim.api.nvim_get_mode().mode:sub(1, 1) ~= "i" then
+            return
+        end
+
+        if vim.fn.pumvisible() == 1 then
+            if vim.fn.complete_info({ "selected" }).selected == -1 then
+                vim.api.nvim_input(vim.keycode("<C-n>"))
+            end
+            return
+        end
+
+        attempts = attempts + 1
+        if attempts < 100 then
+            vim.defer_fn(select_first_result, 10)
+        end
+    end
+
     vim.lsp.completion.get()
-end, { desc = "Trigger LSP completion" })
+    vim.defer_fn(select_first_result, 10)
+end, { desc = "Trigger LSP completion and select first item" })
 
 -- Close popups
 vim.keymap.set('n', '<leader>x', function()
