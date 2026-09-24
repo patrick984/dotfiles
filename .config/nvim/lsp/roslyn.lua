@@ -1,5 +1,65 @@
 local diagnostic_group = vim.api.nvim_create_augroup("RoslynDiagnostics", { clear = true })
 local refresh_generation = {}
+local definition_namespace = vim.api.nvim_create_namespace("RoslynMethodDefinitions")
+local definition_refresh_generation = {}
+
+local definition_kinds = {
+    [vim.lsp.protocol.SymbolKind.Function] = true,
+    [vim.lsp.protocol.SymbolKind.Method] = true,
+    [vim.lsp.protocol.SymbolKind.Constructor] = true,
+}
+
+local function refresh_method_definitions(client, bufnr)
+    client:request("textDocument/documentSymbol", {
+        textDocument = vim.lsp.util.make_text_document_params(bufnr),
+    }, function(err, symbols)
+        if err or not vim.api.nvim_buf_is_valid(bufnr) then
+            return
+        end
+
+        vim.api.nvim_buf_clear_namespace(bufnr, definition_namespace, 0, -1)
+
+        local function add_symbols(items)
+            for _, symbol in ipairs(items or {}) do
+                if definition_kinds[symbol.kind] and symbol.selectionRange then
+                    local range = symbol.selectionRange
+                    local line = vim.api.nvim_buf_get_lines(
+                        bufnr, range.start.line, range.start.line + 1, false
+                    )[1] or ""
+                    local start_col = vim.str_byteindex(
+                        line, client.offset_encoding, range.start.character, false
+                    )
+                    local end_col = vim.str_byteindex(
+                        line, client.offset_encoding, range["end"].character, false
+                    )
+
+                    vim.api.nvim_buf_set_extmark(bufnr, definition_namespace, range.start.line,
+                        start_col, {
+                            end_row = range["end"].line,
+                            end_col = end_col,
+                            hl_group = "CSharpMethodDefinition",
+                            priority = 130,
+                        })
+                end
+                add_symbols(symbol.children)
+            end
+        end
+
+        add_symbols(symbols)
+    end, bufnr)
+end
+
+local function schedule_definition_refresh(client, bufnr)
+    local generation = (definition_refresh_generation[bufnr] or 0) + 1
+    definition_refresh_generation[bufnr] = generation
+
+    vim.defer_fn(function()
+        if definition_refresh_generation[bufnr] == generation
+            and vim.api.nvim_buf_is_valid(bufnr) then
+            refresh_method_definitions(client, bufnr)
+        end
+    end, 200)
+end
 
 local function refresh_diagnostics(client, target_bufnr)
     local registrations = client.dynamic_capabilities.capabilities.diagnosticProvider or {}
@@ -93,6 +153,18 @@ return {
     },
     on_attach = function(client, bufnr)
         vim.api.nvim_clear_autocmds({ group = diagnostic_group, buffer = bufnr })
+        if client:supports_method("textDocument/documentSymbol") then
+            schedule_definition_refresh(client, bufnr)
+            vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave", "TextChanged" }, {
+                group = diagnostic_group,
+                buffer = bufnr,
+                callback = function()
+                    schedule_definition_refresh(client, bufnr)
+                end,
+                desc = "Highlight C# method definitions",
+            })
+        end
+
         if client:supports_method("textDocument/signatureHelp") then
             vim.api.nvim_create_autocmd("InsertCharPre", {
                 group = diagnostic_group,
@@ -139,6 +211,7 @@ return {
             buffer = bufnr,
             callback = function()
                 refresh_generation[bufnr] = nil
+                definition_refresh_generation[bufnr] = nil
             end,
             desc = "Clear Roslyn diagnostic refresh state",
         })
