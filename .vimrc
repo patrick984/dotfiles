@@ -150,46 +150,13 @@ try
 catch /^Vim\%((\a\+)\)\=:E474/
 endtry
 
-inoremap <C-Space> <C-x><C-o>
+" Use the LSP plugin's asynchronous completion path.  Ctrl-X Ctrl-O invokes
+" omnifunc synchronously and can block Vim while the language server replies.
+inoremap <silent> <C-Space> <C-\><C-o>:call lsp#completion#LspComplete(v:true)<CR>
 
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"
-
-"=========================================================
-" LSP Specific Smart Triggers
-"=========================================================
-
-" 1. Typing '.' inserts '.' then instantly checks for LSP members
-inoremap <expr> . SmartDotTrigger()
-
-function! SmartDotTrigger()
-    " If inside a comment or string syntax block, do not trigger
-    let l:syntax_group = synIDattr(synID(line('.'), col('.') - 1, 1), 'name')
-    if l:syntax_group =~? 'comment\|string'
-        return '.'
-    endif
-    
-    " Safely feed Ctrl-x followed by Ctrl-o via a brief 10ms timer
-    call timer_start(10, {-> feedkeys("\<C-x>\<C-o>", 'm')})
-    return '.'
-endfunction
-
-
-" 2. Typing '>' inserts '>' and checks if it completes an arrow '->'
-inoremap <expr> > SmartArrowTrigger()
-
-function! SmartArrowTrigger()
-    " Get text from start of line up to the cursor
-    let l:line_text = strpart(getline('.'), 0, col('.') - 1)
-    
-    " Check if the character directly behind the cursor is a hyphen
-    if l:line_text =~ '-$'
-        " Safely feed Ctrl-x followed by Ctrl-o via a brief 10ms timer
-        call timer_start(10, {-> feedkeys("\<C-x>\<C-o>", 'm')})
-    endif
-    return '>'
-endfunction
 
 "=========================================================
 " Tags / Paths
@@ -326,8 +293,8 @@ let lspOpts = #{
       \ aleSupport: v:true,
       \ autoHighlightDiags: v:true,
       \ autoPopulateDiags: v:true,
-      \ omniComplete: v:true,
-      \ autoComplete: v:false,
+      \ omniComplete: v:false,
+      \ autoComplete: v:true,
       \ completionTextEdit: v:true,
       \ echoSignature: v:true,
       \ hoverInPreview: v:true,
