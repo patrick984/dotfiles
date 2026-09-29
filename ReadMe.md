@@ -57,6 +57,16 @@ they are unavailable:
 - `nvim`
 - `bash-completion`
 
+For structural Python highlighting, install `nvim-treesitter` and its Python
+parser with:
+
+```sh
+./setup-neovim-treesitter.sh
+```
+
+The setup requires Git, Cargo (when `tree-sitter-cli` is not already installed),
+a C compiler, and network access. The normal `install.sh` remains copy-only.
+
 ## Language Servers
 
 Neovim uses built-in LSP and only enables servers whose executables are present.
@@ -80,7 +90,7 @@ formatting.
 
 ### Neovim
 
-1. Single-file config: `.config/nvim/init.lua`.
+1. Native Lua config rooted at `.config/nvim/init.lua`.
 2. Uses built-in LSP support instead of requiring third-party plugins.
 3. Provides language support for C, C++, Python, C#, Go, Rust,
    TypeScript/JavaScript, HTML/CSS, JSON, and Odin when the corresponding
