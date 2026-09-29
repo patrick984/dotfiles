@@ -387,7 +387,14 @@ if vim.fn.isdirectory(blink_dir) == 1 then
         sources = {
             default = { "lsp", "path", "snippets", "buffer" },
         },
-        fuzzy = { implementation = "prefer_rust_with_warning" },
+        fuzzy = {
+            implementation = "prefer_rust_with_warning",
+            sorts = {
+                "exact",
+                "sort_text",
+                "score",
+            },
+        },
     })
 end
 
