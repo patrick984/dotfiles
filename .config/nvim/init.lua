@@ -386,13 +386,38 @@ if vim.fn.isdirectory(blink_dir) == 1 then
         snippets = { preset = "default" },
         sources = {
             default = { "lsp", "path", "snippets", "buffer" },
+            providers = {
+                lsp = {
+                    transform_items = function(_, items)
+                        if vim.bo.filetype ~= "cs" then
+                            return items
+                        end
+
+                        local kinds = require("blink.cmp.types").CompletionItemKind
+                        for _, item in ipairs(items) do
+                            local offset = 0
+                            if item.kind == kinds.Variable then
+                                offset = 4
+                            elseif item.kind == kinds.Keyword then
+                                offset = -3
+                            elseif item.kind == kinds.Snippet then
+                                offset = -5
+                            end
+                            item.score_offset = (item.score_offset or 0) + offset
+                        end
+                        return items
+                    end,
+                },
+                snippets = {
+                    score_offset = -8,
+                },
+            },
         },
         fuzzy = {
             implementation = "prefer_rust_with_warning",
             sorts = {
-                "exact",
-                "sort_text",
                 "score",
+                "sort_text",
             },
         },
     })
