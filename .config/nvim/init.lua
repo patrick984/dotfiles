@@ -72,47 +72,6 @@ vim.keymap.set("n", "<leader>ff", ":find ", { desc = "Find file in project" })
 vim.keymap.set("n", "<leader>fb", ":buffer ", { desc = "Find active buffer" })
 
 
--- Navigate native LSP completion with <Tab>; completion itself is asynchronous.
-vim.keymap.set("i", "<Tab>", function()
-    if vim.fn.pumvisible() == 1 then
-        return "<C-n>"
-    end
-    return "<Tab>"
-end,
-{ expr = true, noremap = true, desc = "Next completion item or insert tab" })
-
-vim.keymap.set("i", "<C-Space>", function()
-    local completion = vim.fn.complete_info({ "selected" })
-    if vim.fn.pumvisible() == 1 and completion.selected == -1 then
-        vim.api.nvim_feedkeys(vim.keycode("<C-n>"), "n", false)
-        return
-    end
-
-    local bufnr = vim.api.nvim_get_current_buf()
-    local attempts = 0
-    local function select_first_result()
-        if vim.api.nvim_get_current_buf() ~= bufnr
-            or vim.api.nvim_get_mode().mode:sub(1, 1) ~= "i" then
-            return
-        end
-
-        if vim.fn.pumvisible() == 1 then
-            if vim.fn.complete_info({ "selected" }).selected == -1 then
-                vim.api.nvim_input(vim.keycode("<C-n>"))
-            end
-            return
-        end
-
-        attempts = attempts + 1
-        if attempts < 100 then
-            vim.defer_fn(select_first_result, 10)
-        end
-    end
-
-    vim.lsp.completion.get()
-    vim.defer_fn(select_first_result, 10)
-end, { desc = "Trigger LSP completion and select first item" })
-
 -- Close popups
 vim.keymap.set('n', '<leader>x', function()
   -- 1. Close Quickfix and Location lists
@@ -370,6 +329,65 @@ vim.api.nvim_create_autocmd({ "ModeChanged" }, {
     end,
 })
 
+
+-- VS Code-like completion UI, fuzzy matching, snippets, and signature help.
+local blink_dir = vim.fn.expand("~/.config/nvim/pack/plugins/opt/blink.cmp")
+local friendly_snippets_dir = vim.fn.expand(
+    "~/.config/nvim/pack/plugins/opt/friendly-snippets"
+)
+
+if vim.fn.isdirectory(blink_dir) == 1 then
+    if vim.fn.isdirectory(friendly_snippets_dir) == 1 then
+        vim.cmd.packadd("friendly-snippets")
+    end
+
+    vim.cmd.packadd("blink.cmp")
+    require("blink.cmp").setup({
+        keymap = {
+            preset = "none",
+            ["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
+            ["<C-e>"] = { "hide" },
+            ["<CR>"] = { "accept", "fallback" },
+            ["<Tab>"] = { "select_next", "snippet_forward", "fallback" },
+            ["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
+            ["<C-n>"] = { "select_next", "fallback" },
+            ["<C-p>"] = { "select_prev", "fallback" },
+            ["<C-b>"] = { "scroll_documentation_up", "fallback" },
+            ["<C-f>"] = { "scroll_documentation_down", "fallback" },
+        },
+        completion = {
+            list = {
+                selection = {
+                    preselect = true,
+                    auto_insert = false,
+                },
+            },
+            documentation = {
+                auto_show = true,
+                auto_show_delay_ms = 300,
+            },
+            ghost_text = { enabled = true },
+            accept = {
+                auto_brackets = { enabled = true },
+            },
+            menu = {
+                draw = {
+                    columns = {
+                        { "kind_icon" },
+                        { "label", "label_description", gap = 1 },
+                        { "source_name" },
+                    },
+                },
+            },
+        },
+        signature = { enabled = true },
+        snippets = { preset = "default" },
+        sources = {
+            default = { "lsp", "path", "snippets", "buffer" },
+        },
+        fuzzy = { implementation = "prefer_rust_with_warning" },
+    })
+end
 
 -- Shared LSP behavior and native per-server configurations.
 require("config.lsp")

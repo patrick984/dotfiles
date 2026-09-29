@@ -330,30 +330,6 @@ return {
             })
         end
 
-        if client:supports_method("textDocument/signatureHelp") then
-            vim.api.nvim_create_autocmd("InsertCharPre", {
-                group = diagnostic_group,
-                buffer = bufnr,
-                callback = function()
-                    if vim.v.char ~= "(" and vim.v.char ~= "," then
-                        return
-                    end
-
-                    vim.schedule(function()
-                        if vim.api.nvim_get_current_buf() == bufnr
-                            and vim.api.nvim_get_mode().mode:sub(1, 1) == "i" then
-                            vim.lsp.buf.signature_help({
-                                border = "single",
-                                focusable = false,
-                                silent = true,
-                            })
-                        end
-                    end)
-                end,
-                desc = "Show Roslyn signature help in argument lists",
-            })
-        end
-
         vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
             group = diagnostic_group,
             buffer = bufnr,
@@ -389,6 +365,7 @@ return {
             dotnet_show_name_completion_suggestions = true,
             dotnet_show_completion_items_from_unimported_namespaces = true,
             dotnet_provide_regex_completions = true,
+            dotnet_trigger_completion_in_argument_lists = true,
         },
         ["csharp|inlay_hints"] = {
             csharp_enable_inlay_hints_for_implicit_object_creation = true,
