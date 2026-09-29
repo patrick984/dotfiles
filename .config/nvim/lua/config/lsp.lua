@@ -126,19 +126,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
         if not client then return end
 
-        if client:supports_method("textDocument/completion") then
-            if client.name == "roslyn" then
-                local completion = client.server_capabilities.completionProvider
-                completion.triggerCharacters = vim.tbl_filter(function(character)
-                    return character ~= "(" and character ~= " "
-                end, completion.triggerCharacters or {})
-            end
-
-            vim.lsp.completion.enable(true, client.id, bufnr, {
-                autotrigger = true,
-            })
-        end
-
         if client:supports_method("textDocument/inlayHint") then
             local delay = client.name == "clangd" and 150 or 0
 
@@ -152,6 +139,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
         vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
         vim.keymap.set('n', 'gD', vim.lsp.buf.declaration,
             { buffer = bufnr, desc = "Go to declaration" })
+        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename,
+            { buffer = bufnr, desc = "Rename symbol" })
         vim.keymap.set("n", "<leader>cs", vim.lsp.buf.workspace_symbol, opts)
         if client.name == "clangd" then
             vim.keymap.set("n", "<leader>cc", function()
