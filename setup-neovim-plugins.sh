@@ -24,6 +24,7 @@ install_plugin() {
 
     if [[ -d "$destination/.git" ]]; then
         printf 'update %s\n' "$name"
+        git -C "$destination" remote set-url origin "$url"
         git -C "$destination" pull --ff-only
         return
     fi
@@ -50,7 +51,7 @@ install_plugin "nvim-web-devicons" \
 install_plugin "vim-fugitive" \
     "https://github.com/tpope/vim-fugitive.git"
 install_plugin "diffs.nvim" \
-    "https://github.com/barrettruth/diffs.nvim.git"
+    "https://forge.barrettruth.com/barrettruth/diffs.nvim.git"
 install_plugin "grug-far.nvim" \
     "https://github.com/MagicDuck/grug-far.nvim.git"
 install_plugin "nvim-treesitter" \
