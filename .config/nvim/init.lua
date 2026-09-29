@@ -348,7 +348,7 @@ if vim.fn.isdirectory(blink_dir) == 1 then
             ["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
             ["<C-e>"] = { "hide" },
             ["<CR>"] = { "accept", "fallback" },
-            ["<Tab>"] = { "select_next", "snippet_forward", "fallback" },
+            ["<Tab>"] = { "accept", "snippet_forward", "fallback" },
             ["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
             ["<C-n>"] = { "select_next", "fallback" },
             ["<C-p>"] = { "select_prev", "fallback" },
