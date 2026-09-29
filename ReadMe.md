@@ -67,6 +67,17 @@ parser with:
 The setup requires Git, Cargo (when `tree-sitter-cli` is not already installed),
 a C compiler, and network access. The normal `install.sh` remains copy-only.
 
+Install or update all optional Neovim plugins without a plugin manager:
+
+```sh
+./setup-neovim-plugins.sh
+```
+
+Plugins are cloned into `~/.config/nvim/pack/plugins/opt`. Rerunning the script
+updates each checkout with a fast-forward-only pull. `blink.cmp` stays on its
+stable `v1` branch; the remaining plugins track their default branches. The
+normal `install.sh` remains copy-only and never downloads plugins.
+
 ## Language Servers
 
 Neovim uses built-in LSP and only enables servers whose executables are present.
@@ -91,7 +102,8 @@ formatting.
 ### Neovim
 
 1. Native Lua config rooted at `.config/nvim/init.lua`.
-2. Uses built-in LSP support instead of requiring third-party plugins.
+2. Uses built-in LSP support, with optional `blink.cmp` completion when the
+   plugin is installed.
 3. Provides language support for C, C++, Python, C#, Go, Rust,
    TypeScript/JavaScript, HTML/CSS, JSON, and Odin when the corresponding
    language servers are installed.
