@@ -383,6 +383,25 @@ if vim.fn.isdirectory(codediff_dir) then
     vim.opt.rtp:append("~/.local/share/nvim/codediff.nvim")
 end
 
+local treesitter_dir = vim.fn.expand("~/.config/nvim/pack/plugins/opt/nvim-treesitter")
+
+if vim.fn.isdirectory(treesitter_dir) == 1 then
+    local treesitter_loaded = pcall(vim.cmd, "packadd nvim-treesitter")
+    if treesitter_loaded then
+        vim.api.nvim_create_autocmd("FileType", {
+            pattern = "python",
+            callback = function(args)
+                local ok, err = pcall(vim.treesitter.start, args.buf, "python")
+                if not ok then
+                    vim.notify("Python Treesitter highlighting unavailable: " .. err,
+                        vim.log.levels.WARN)
+                end
+            end,
+            desc = "Enable structural Python highlighting",
+        })
+    end
+end
+
 local fzf_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/fzf-lua')
 local fzf_icons_dir = vim.fn.expand('~/.config/nvim/pack/plugins/opt/nvim-web-devicons')
 
