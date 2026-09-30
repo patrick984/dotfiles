@@ -120,7 +120,7 @@ local hl_groups = {
     Search         = { bg = "#7dec97" },
     IncSearch      = { bg = "#ffdf5d" },
     CurSearch      = { bg = "#ffdf5d" },
-    MatchParen     = { bg = "#dc99df" },
+    MatchParen     = { bg = "#cfeecd" },
     StatusLine     = { fg = "#000000", bg = "#ebf5ff", bold = true },
     StatusLineNC   = { fg = "#000000", bg = "#ebf5ff" },
     WinSeparator   = { fg = "#ebf5ff", bg = "#ebf5ff" },
@@ -336,6 +336,24 @@ local friendly_snippets_dir = vim.fn.expand(
     "~/.config/nvim/pack/plugins/opt/friendly-snippets"
 )
 
+local function csharp_cursor_in_string()
+    if vim.bo.filetype ~= "cs" then
+        return false
+    end
+
+    local line = vim.fn.line(".")
+    local column = vim.fn.col(".")
+    for _, target_column in ipairs({ column, math.max(1, column - 1) }) do
+        for _, syntax_id in ipairs(vim.fn.synstack(line, target_column)) do
+            local name = vim.fn.synIDattr(syntax_id, "name"):lower()
+            if name:find("string", 1, true) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 if vim.fn.isdirectory(blink_dir) == 1 then
     if vim.fn.isdirectory(friendly_snippets_dir) == 1 then
         vim.cmd.packadd("friendly-snippets")
@@ -409,7 +427,15 @@ if vim.fn.isdirectory(blink_dir) == 1 then
                     end,
                 },
                 snippets = {
+                    enabled = function()
+                        return not csharp_cursor_in_string()
+                    end,
                     score_offset = -8,
+                },
+                buffer = {
+                    enabled = function()
+                        return not csharp_cursor_in_string()
+                    end,
                 },
             },
         },
