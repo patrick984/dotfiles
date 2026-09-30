@@ -107,10 +107,59 @@ vim.keymap.set("n", "<leader>cd", show_line_diagnostics, {
 })
 
 local format_sync_group = vim.api.nvim_create_augroup("LspFormatOnSave", { clear = true })
+local csharpier_format_group = vim.api.nvim_create_augroup("CSharpierFormatOnSave", { clear = true })
+
+local function format_with_csharpier(bufnr)
+    local filename = vim.api.nvim_buf_get_name(bufnr)
+    if filename == "" or vim.fn.executable("csharpier") ~= 1 then
+        return false
+    end
+
+    local input = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
+    if vim.bo[bufnr].endofline then
+        input = input .. "\n"
+    end
+
+    local result = vim.system({
+        "csharpier",
+        "format",
+        "--write-stdout",
+        "--stdin-path",
+        filename,
+    }, { stdin = input, text = true }):wait(10000)
+
+    if result.code ~= 0 then
+        local message = result.stderr ~= "" and result.stderr or "CSharpier failed"
+        vim.notify(vim.trim(message), vim.log.levels.ERROR)
+        return false
+    end
+
+    local output = (result.stdout or ""):gsub("\r\n", "\n")
+    local lines = vim.split(output, "\n", { plain = true })
+    if lines[#lines] == "" then
+        table.remove(lines)
+    end
+
+    local current = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    if not vim.deep_equal(current, lines) then
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+    end
+    return true
+end
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+    group = csharpier_format_group,
+    pattern = "*.cs",
+    callback = function(args)
+        if not format_with_csharpier(args.buf) then
+            vim.lsp.buf.format({ bufnr = args.buf, async = false, timeout_ms = 5000 })
+        end
+    end,
+    desc = "Format C# with CSharpier before saving",
+})
 
 -- Formatting is opt-in per language. Add a filetype here when you want it.
 local format_on_save_filetypes = {
-    cs = true,
     -- python = true,
     -- go = true,
     -- rust = true,
@@ -165,7 +214,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
             end, { buffer = bufnr, desc = "Switch Source/Header" })
         end
         vim.keymap.set("n", "<leader>cf", function()
+            if vim.bo[bufnr].filetype ~= "cs" or not format_with_csharpier(bufnr) then
                 vim.lsp.buf.format({ bufnr = bufnr, async = true })
+            end
         end, { buffer = bufnr, desc = "Format Document (Manual)" })
 
         if format_on_save_filetypes[vim.bo[bufnr].filetype]
