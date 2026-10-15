@@ -71,6 +71,104 @@ vim.keymap.set("n", "<leader>ff", ":find ", { desc = "Find file in project" })
 -- Quick find buffer (search through your currently open files by name)
 vim.keymap.set("n", "<leader>fb", ":buffer ", { desc = "Find active buffer" })
 
+-- Keep special-purpose windows separate from normal editing buffers.
+local last_editing_window
+
+local function is_editing_buffer(bufnr)
+    return vim.api.nvim_buf_is_valid(bufnr)
+        and vim.bo[bufnr].buflisted
+        and vim.bo[bufnr].buftype == ""
+        and vim.bo[bufnr].filetype ~= "netrw"
+end
+
+local function remember_editing_window()
+    local bufnr = vim.api.nvim_get_current_buf()
+    if is_editing_buffer(bufnr) then
+        last_editing_window = vim.api.nvim_get_current_win()
+    end
+end
+
+vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
+    callback = remember_editing_window,
+    desc = "Remember the most recent normal editing window",
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "qf", "netrw" },
+    callback = function(args)
+        if vim.bo[args.buf].filetype == "qf" then
+            vim.bo[args.buf].buflisted = false
+        end
+
+        for _, winid in ipairs(vim.fn.win_findbuf(args.buf)) do
+            vim.wo[winid].winfixbuf = true
+        end
+    end,
+    desc = "Protect quickfix and file explorer windows",
+})
+
+local function editing_window()
+    local current = vim.api.nvim_get_current_win()
+    if is_editing_buffer(vim.api.nvim_win_get_buf(current)) then
+        return current
+    end
+
+    if last_editing_window
+        and vim.api.nvim_win_is_valid(last_editing_window)
+        and vim.api.nvim_win_get_tabpage(last_editing_window) == vim.api.nvim_get_current_tabpage()
+        and is_editing_buffer(vim.api.nvim_win_get_buf(last_editing_window)) then
+        return last_editing_window
+    end
+
+    for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        if vim.api.nvim_win_get_config(winid).relative == ""
+            and is_editing_buffer(vim.api.nvim_win_get_buf(winid)) then
+            return winid
+        end
+    end
+end
+
+local function cycle_editing_buffer(direction)
+    local winid = editing_window()
+    if not winid then
+        vim.notify("No normal editing window is available", vim.log.levels.INFO)
+        return
+    end
+
+    local buffers = vim.tbl_filter(is_editing_buffer, vim.api.nvim_list_bufs())
+    if #buffers == 0 then
+        return
+    end
+
+    table.sort(buffers)
+    local current = vim.api.nvim_win_get_buf(winid)
+    local current_index = 0
+    for index, bufnr in ipairs(buffers) do
+        if bufnr == current then
+            current_index = index
+            break
+        end
+    end
+
+    local next_index
+    if current_index == 0 then
+        next_index = direction > 0 and 1 or #buffers
+    else
+        next_index = ((current_index - 1 + direction) % #buffers) + 1
+    end
+
+    vim.api.nvim_set_current_win(winid)
+    vim.api.nvim_win_set_buf(winid, buffers[next_index])
+end
+
+vim.keymap.set("n", "]b", function()
+    cycle_editing_buffer(1)
+end, { silent = true, desc = "Next editing buffer" })
+
+vim.keymap.set("n", "[b", function()
+    cycle_editing_buffer(-1)
+end, { silent = true, desc = "Previous editing buffer" })
+
 
 -- Close popups
 vim.keymap.set('n', '<leader>x', function()
