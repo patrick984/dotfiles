@@ -55,5 +55,6 @@ copy_file ".tmux.conf" ".tmux.conf"
 copy_file ".vimrc" ".vimrc"
 copy_file ".vim/colors/light_custom.vim" ".vim/colors/light_custom.vim"
 copy_tree_files ".config/nvim" ".config/nvim"
+copy_tree_files ".config/helix" ".config/helix"
 
 printf 'done\n'
