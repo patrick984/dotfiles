@@ -79,6 +79,19 @@ updates each checkout with a fast-forward-only pull. `blink.cmp` stays on its
 stable `v1` branch; the remaining plugins track their default branches. The
 normal `install.sh` remains copy-only and never downloads plugins.
 
+Install or update Helix from its current `master` branch:
+
+```sh
+./setup-helix.sh
+```
+
+The script clones Helix into `~/.local/share/helix`, builds `hx` into
+`~/.local/bin`, and links `~/.config/helix/runtime` to the matching checkout.
+Rerunning it performs a fast-forward-only update and rebuild. Set
+`HELIX_BRANCH`, `HELIX_SOURCE_DIR`, or `HELIX_INSTALL_ROOT` to override those
+defaults. Git, Cargo, a C compiler, and a linker are required. The normal
+`install.sh` remains copy-only and does not build Helix.
+
 ## Language Servers
 
 Neovim uses built-in LSP and only enables servers whose executables are present.
