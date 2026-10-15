@@ -354,6 +354,16 @@ local function csharp_cursor_in_string()
     return false
 end
 
+local function minimum_completion_length(length)
+    return function(ctx)
+        local trigger = ctx.trigger.initial_kind
+        if trigger == "manual" or trigger == "trigger_character" then
+            return 0
+        end
+        return length
+    end
+end
+
 if vim.fn.isdirectory(blink_dir) == 1 then
     if vim.fn.isdirectory(friendly_snippets_dir) == 1 then
         vim.cmd.packadd("friendly-snippets")
@@ -401,11 +411,24 @@ if vim.fn.isdirectory(blink_dir) == 1 then
             },
         },
         signature = { enabled = true },
+        cmdline = {
+            sources = function()
+                local command_type = vim.fn.getcmdtype()
+                if command_type == "/" or command_type == "?" then
+                    return { "buffer" }
+                end
+                if command_type == ":" or command_type == "@" then
+                    return { "cmdline" }
+                end
+                return {}
+            end,
+        },
         snippets = { preset = "default" },
         sources = {
             default = { "lsp", "path", "snippets", "buffer" },
             providers = {
                 lsp = {
+                    min_keyword_length = minimum_completion_length(2),
                     transform_items = function(_, items)
                         if vim.bo.filetype ~= "cs" then
                             return items
@@ -430,12 +453,14 @@ if vim.fn.isdirectory(blink_dir) == 1 then
                     enabled = function()
                         return not csharp_cursor_in_string()
                     end,
+                    min_keyword_length = minimum_completion_length(3),
                     score_offset = -8,
                 },
                 buffer = {
                     enabled = function()
                         return not csharp_cursor_in_string()
                     end,
+                    min_keyword_length = minimum_completion_length(3),
                 },
             },
         },
