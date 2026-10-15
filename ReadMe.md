@@ -8,7 +8,7 @@ development containers.
 1. Deploy easily by copy or `scp`.
 2. Support macOS and Linux.
 3. Work well in SSH sessions and lightweight development containers.
-4. Support Bash, Zsh, tmux, Vim, and Neovim when available on the host.
+4. Support Bash, Zsh, tmux, Vim, Neovim, and Helix when available on the host.
 5. Prioritise readable light-background themes in all utilities.
 6. Avoid hard failures when optional tools or plugins are missing.
 
@@ -55,6 +55,7 @@ they are unavailable:
 - `direnv`
 - `zoxide`
 - `nvim`
+- `hx`
 - `bash-completion`
 
 For structural Python highlighting, install `nvim-treesitter` and its Python
@@ -97,7 +98,22 @@ Format-on-save is opt-in per language in `.config/nvim/init.lua`. Manual
 formatting remains available through `<leader>cf` when an attached LSP supports
 formatting.
 
+Helix uses the same server executables and enables inlay hints globally. C# is
+formatted on save with `csharpier`; other languages keep formatting manual via
+`<space>cf`.
+
 ## Tool-Specific Notes
+
+### Helix
+
+1. Uses a light theme, soft wrapping, four-space indentation, and a compact
+   status line similar to the Neovim configuration.
+2. LSP features are available through Helix defaults (`gd`, `gD`, `gr`, `gi`,
+   `<space>k`) and Neovim-like additions (`<space>rn`, `<space>ca`,
+   `<space>cd`, `<space>cs`, and `<space>cf`).
+3. Use `<space>th` to toggle inlay hints, `<C-p>` or `<space>ff` to find files,
+   `<space>fg` to search the project, and `<space>fb` to select a buffer.
+4. Run `hx --health <language>` to check grammar and language-server discovery.
 
 ### Neovim
 

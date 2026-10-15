@@ -1,0 +1,125 @@
+# Keep language behavior close to the Neovim setup. Helix merges these entries
+# with its built-in language definitions, so syntax, roots, and file types do
+# not need to be repeated here.
+
+[language-server.pyright.config.python.analysis.inlayHints]
+variableTypes = true
+functionReturnTypes = true
+
+[language-server.rust-analyzer.config.inlayHints]
+bindingModeHints.enable = true
+chainingHints.enable = true
+closingBraceHints.enable = true
+parameterHints.enable = true
+typeHints.enable = true
+
+[language-server.vtsls.config.typescript.inlayHints]
+parameterNames.enabled = "all"
+parameterTypes.enabled = true
+variableTypes.enabled = true
+propertyDeclarationTypes.enabled = true
+functionLikeReturnTypes.enabled = true
+enumMemberValues.enabled = true
+
+[language-server.vtsls.config.javascript.inlayHints]
+parameterNames.enabled = "all"
+parameterTypes.enabled = true
+variableTypes.enabled = true
+propertyDeclarationTypes.enabled = true
+functionLikeReturnTypes.enabled = true
+enumMemberValues.enabled = true
+
+[language-server.roslyn-language-server.config."csharp|symbol_search"]
+dotnet_search_reference_assemblies = true
+
+[language-server.roslyn-language-server.config."csharp|completion"]
+dotnet_show_name_completion_suggestions = true
+dotnet_show_completion_items_from_unimported_namespaces = true
+dotnet_provide_regex_completions = true
+dotnet_trigger_completion_in_argument_lists = true
+
+[language-server.roslyn-language-server.config."csharp|inlay_hints"]
+csharp_enable_inlay_hints_for_implicit_object_creation = true
+csharp_enable_inlay_hints_for_implicit_variable_types = true
+
+[[language]]
+name = "c"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["clangd"]
+
+[[language]]
+name = "cpp"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["clangd"]
+
+[[language]]
+name = "c-sharp"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["roslyn-language-server"]
+formatter = { command = "csharpier", args = ["format", "--write-stdout", "--stdin-path", "%{buffer_name}"] }
+auto-format = true
+
+[[language]]
+name = "css"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["vscode-css-language-server"]
+
+[[language]]
+name = "scss"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["vscode-css-language-server"]
+
+[[language]]
+name = "html"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["vscode-html-language-server"]
+
+[[language]]
+name = "json"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["vscode-json-language-server"]
+
+[[language]]
+name = "jsonc"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["vscode-json-language-server"]
+
+[[language]]
+name = "go"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["gopls"]
+
+[[language]]
+name = "odin"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["ols"]
+
+[[language]]
+name = "python"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["pyright"]
+
+[[language]]
+name = "rust"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["rust-analyzer"]
+
+[[language]]
+name = "javascript"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["vtsls"]
+
+[[language]]
+name = "jsx"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["vtsls"]
+
+[[language]]
+name = "typescript"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["vtsls"]
+
+[[language]]
+name = "tsx"
+indent = { tab-width = 4, unit = "    " }
+language-servers = ["vtsls"]

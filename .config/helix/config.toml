@@ -1,0 +1,65 @@
+theme = "github_light"
+
+[editor]
+auto-format = false
+bufferline = "multiple"
+color-modes = true
+completion-trigger-len = 1
+completion-timeout = 5
+cursorline = true
+gutters = ["diagnostics", "spacer", "diff"]
+idle-timeout = 250
+popup-border = "all"
+soft-wrap.enable = true
+true-color = true
+
+[editor.cursor-shape]
+normal = "block"
+insert = "bar"
+select = "block"
+
+[editor.file-picker]
+hidden = false
+git-ignore = true
+
+[editor.indent-guides]
+render = true
+character = "│"
+skip-levels = 1
+
+[editor.lsp]
+enable = true
+auto-signature-help = true
+display-inlay-hints = true
+display-messages = true
+display-progress-messages = true
+snippets = true
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "file-modification-indicator"]
+right = ["diagnostics", "selections", "position", "file-encoding"]
+
+[editor.statusline.mode]
+normal = "NORMAL"
+insert = "INSERT"
+select = "SELECT"
+
+[keys.normal]
+C-p = "file_picker"
+
+[keys.normal.space.f]
+f = "file_picker"
+b = "buffer_picker"
+g = "global_search"
+
+[keys.normal.space.c]
+a = "code_action"
+d = "diagnostics_picker"
+f = ":format"
+s = "workspace_symbol_picker"
+
+[keys.normal.space.r]
+n = "rename_symbol"
+
+[keys.normal.space.t]
+h = ":toggle lsp.display-inlay-hints"
