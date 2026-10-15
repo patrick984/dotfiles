@@ -94,17 +94,15 @@ vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
 })
 
 vim.api.nvim_create_autocmd("FileType", {
-    pattern = { "qf", "netrw" },
+    pattern = "qf",
     callback = function(args)
-        if vim.bo[args.buf].filetype == "qf" then
-            vim.bo[args.buf].buflisted = false
-        end
+        vim.bo[args.buf].buflisted = false
 
         for _, winid in ipairs(vim.fn.win_findbuf(args.buf)) do
             vim.wo[winid].winfixbuf = true
         end
     end,
-    desc = "Protect quickfix and file explorer windows",
+    desc = "Protect quickfix windows",
 })
 
 local function editing_window()
