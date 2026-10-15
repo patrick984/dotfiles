@@ -530,6 +530,12 @@ if vim.fn.isdirectory(fzf_dir) == 1 then
         -- Initialize the plugin settings
         fzf_lua.setup({
             fzf_colors = true,
+            actions = {
+                files = {
+                    true,
+                    ["ctrl-q"] = fzf_lua.actions.file_sel_to_qf,
+                },
+            },
             hls = {
                 normal = "Pmenu",
                 border = "FloatBorder",
