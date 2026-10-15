@@ -79,18 +79,19 @@ updates each checkout with a fast-forward-only pull. `blink.cmp` stays on its
 stable `v1` branch; the remaining plugins track their default branches. The
 normal `install.sh` remains copy-only and never downloads plugins.
 
-Install or update Helix from its current `master` branch:
+Install or update Helix from its latest official binary release:
 
 ```sh
 ./setup-helix.sh
 ```
 
-The script clones Helix into `~/.local/share/helix`, builds `hx` into
-`~/.local/bin`, and links `~/.config/helix/runtime` to the matching checkout.
-Rerunning it performs a fast-forward-only update and rebuild. Set
-`HELIX_BRANCH`, `HELIX_SOURCE_DIR`, or `HELIX_INSTALL_ROOT` to override those
-defaults. Git, Cargo, a C compiler, and a linker are required. The normal
-`install.sh` remains copy-only and does not build Helix.
+The script detects ARM64 or x86-64 Linux/macOS, downloads the matching release,
+and installs versioned files beneath `~/.local/share/helix-binary`. It links
+`~/.local/bin/hx` and `~/.config/helix/runtime` to the selected release so the
+binary, grammars, and queries stay in sync. Rerunning it updates to the latest
+release without compiling anything. Set `HELIX_VERSION`, `HELIX_INSTALL_DIR`,
+or `HELIX_BIN_DIR` to override the defaults. Curl, tar, and xz are required. The
+normal `install.sh` remains copy-only and does not download Helix.
 
 ## Language Servers
 
