@@ -534,7 +534,7 @@ if vim.fn.isdirectory(fzf_dir) == 1 then
                 files = {
                     true,
                     ["ctrl-q"] = fzf_lua.actions.file_sel_to_qf,
-                    ["ctrl-g"] = {
+                    ["ctrl-o"] = {
                         fn = fzf_lua.actions.file_sel_to_qf,
                         prefix = "select-all",
                     },
