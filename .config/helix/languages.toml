@@ -2,9 +2,16 @@
 # with its built-in language definitions, so syntax, roots, and file types do
 # not need to be repeated here.
 
+[language-server.pyright]
+command = "pyright-langserver"
+args = ["--stdio"]
+
 [language-server.pyright.config.python.analysis.inlayHints]
 variableTypes = true
 functionReturnTypes = true
+
+[language-server.rust-analyzer]
+command = "rust-analyzer"
 
 [language-server.rust-analyzer.config.inlayHints]
 bindingModeHints.enable = true
@@ -12,6 +19,10 @@ chainingHints.enable = true
 closingBraceHints.enable = true
 parameterHints.enable = true
 typeHints.enable = true
+
+[language-server.vtsls]
+command = "vtsls"
+args = ["--stdio"]
 
 [language-server.vtsls.config.typescript.inlayHints]
 parameterNames.enabled = "all"
@@ -28,6 +39,11 @@ variableTypes.enabled = true
 propertyDeclarationTypes.enabled = true
 functionLikeReturnTypes.enabled = true
 enumMemberValues.enabled = true
+
+[language-server.roslyn-language-server]
+command = "roslyn-language-server"
+args = ["--stdio", "--autoLoadProjects"]
+timeout = 60
 
 [language-server.roslyn-language-server.config."csharp|symbol_search"]
 dotnet_search_reference_assemblies = true
