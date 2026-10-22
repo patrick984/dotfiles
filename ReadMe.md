@@ -48,6 +48,7 @@ The configs auto-use these tools when installed and fall back gracefully when
 they are unavailable:
 
 - `git`
+- `delta` (usually packaged as `git-delta`)
 - `rg`
 - `fzf`
 - `bat` or `batcat`
@@ -57,6 +58,18 @@ they are unavailable:
 - `nvim`
 - `hx`
 - `bash-completion`
+
+When `delta` is installed, Git uses it for syntax-highlighted diffs with line
+numbers and `n`/`N` navigation. The configuration is light-background oriented
+and also enables `zdiff3` merge-conflict markers. Install it with your package
+manager (the package is usually named `git-delta`) or with Cargo:
+
+```sh
+cargo install git-delta --locked
+```
+
+Run `./install.sh` after installing it. Delta is an optional executable, but the
+managed Git config expects it to be present once installed.
 
 For structural Python highlighting, install `nvim-treesitter` and its Python
 parser with:
