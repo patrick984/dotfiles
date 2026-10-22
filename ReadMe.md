@@ -71,6 +71,20 @@ cargo install git-delta --locked
 Run `./install.sh` after installing it. Delta is an optional executable, but the
 managed Git config expects it to be present once installed.
 
+Install or update Neovim from its latest stable official binary release:
+
+```sh
+./setup-neovim.sh
+```
+
+The script detects ARM64 or x86-64 Linux/macOS, installs versioned releases
+beneath `~/.local/share/neovim-binary`, and links `~/.local/bin/nvim` to the
+selected release. Rerunning it updates to the latest stable release while
+retaining older versions for rollback. Set `NEOVIM_VERSION`,
+`NEOVIM_INSTALL_DIR`, or `NEOVIM_BIN_DIR` to override the defaults. Curl and tar
+are required. The normal `install.sh` remains copy-only and does not download
+Neovim.
+
 For structural Python highlighting, install `nvim-treesitter` and its Python
 parser with:
 
