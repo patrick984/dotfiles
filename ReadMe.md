@@ -85,6 +85,21 @@ retaining older versions for rollback. Set `NEOVIM_VERSION`,
 are required. The normal `install.sh` remains copy-only and does not download
 Neovim.
 
+On Debian-based Linux systems, build a system-wide package from the same
+official release with:
+
+```sh
+./build-neovim-deb.sh
+sudo apt install ./dist/neovim-upstream_*.deb
+```
+
+Package creation runs without root privileges. Installing the resulting package
+requires `sudo`, makes `nvim` available to every user, and conflicts with the
+distribution's `neovim` package. Set `NEOVIM_VERSION`,
+`NEOVIM_DEB_OUTPUT_DIR`, or `NEOVIM_DEB_MAINTAINER` to override the defaults.
+The builder supports native amd64 and arm64 Linux systems and requires curl,
+tar, and `dpkg-deb`.
+
 For structural Python highlighting, install `nvim-treesitter` and its Python
 parser with:
 
