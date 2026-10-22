@@ -432,22 +432,51 @@ local friendly_snippets_dir = vim.fn.expand(
     "~/.config/nvim/pack/plugins/opt/friendly-snippets"
 )
 
-local function csharp_cursor_in_string()
-    if vim.bo.filetype ~= "cs" then
-        return false
+local function cursor_in_syntax_group(group)
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local row = cursor[1] - 1
+    local byte_column = cursor[2]
+
+    local tree_ok, tree = pcall(function()
+        return vim.treesitter.get_parser(0):parse()[1]
+    end)
+    if tree_ok and tree then
+        local root = tree:root()
+        for _, target_column in ipairs({ byte_column, math.max(0, byte_column - 1) }) do
+            local node = root:named_descendant_for_range(
+                row, target_column, row, target_column
+            )
+            while node do
+                if node:type():lower():find(group, 1, true) then
+                    return true
+                end
+                node = node:parent()
+            end
+        end
     end
 
-    local line = vim.fn.line(".")
-    local column = vim.fn.col(".")
+    local line = cursor[1]
+    local column = byte_column + 1
     for _, target_column in ipairs({ column, math.max(1, column - 1) }) do
         for _, syntax_id in ipairs(vim.fn.synstack(line, target_column)) do
             local name = vim.fn.synIDattr(syntax_id, "name"):lower()
-            if name:find("string", 1, true) then
+            if name:find(group, 1, true) then
                 return true
             end
         end
     end
     return false
+end
+
+local function csharp_cursor_in_string()
+    return vim.bo.filetype == "cs" and cursor_in_syntax_group("string")
+end
+
+local function completion_enabled()
+    if vim.bo.filetype == "markdown" or vim.bo.filetype == "text" then
+        return false
+    end
+    return not cursor_in_syntax_group("comment")
 end
 
 local function minimum_completion_length(length)
@@ -467,6 +496,7 @@ if vim.fn.isdirectory(blink_dir) == 1 then
 
     vim.cmd.packadd("blink.cmp")
     require("blink.cmp").setup({
+        enabled = completion_enabled,
         keymap = {
             preset = "none",
             ["<C-Space>"] = { "show", "show_documentation", "hide_documentation" },
