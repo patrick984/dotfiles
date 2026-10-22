@@ -158,13 +158,42 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     desc = "Format C# with CSharpier before saving",
 })
 
--- Formatting is opt-in per language. Add a filetype here when you want it.
-local format_on_save_filetypes = {
-    -- python = true,
-    -- go = true,
-    -- rust = true,
-    -- typescript = true,
+-- Formatting is opt-in per language and pinned to one LSP client so multiple
+-- servers cannot race to edit the same buffer.
+local format_on_save_clients = {
+    python = "ruff",
+    -- go = "gopls",
+    -- rust = "rust_analyzer",
+    -- typescript = "vtsls",
 }
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+    group = format_sync_group,
+    callback = function(args)
+        local formatter_name = format_on_save_clients[vim.bo[args.buf].filetype]
+        if not formatter_name then
+            return
+        end
+
+        local formatter = vim.iter(vim.lsp.get_clients({ bufnr = args.buf })):find(function(client)
+            return client.name == formatter_name
+                and client:supports_method("textDocument/formatting")
+        end)
+        if not formatter then
+            return
+        end
+
+        vim.lsp.buf.format({
+            bufnr = args.buf,
+            async = false,
+            timeout_ms = 5000,
+            filter = function(client)
+                return client.name == formatter_name
+            end,
+        })
+    end,
+    desc = "Format with the configured LSP client before saving",
+})
 
 -- Handle bindings natively on file capture
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -190,6 +219,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
             { buffer = bufnr, desc = "Go to declaration" })
         vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename,
             { buffer = bufnr, desc = "Rename symbol" })
+        vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action,
+            { buffer = bufnr, desc = "Code action" })
         vim.keymap.set("n", "<leader>cs", vim.lsp.buf.workspace_symbol, opts)
         if client.name == "clangd" then
             vim.keymap.set("n", "<leader>cc", function()
@@ -219,21 +250,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
             end
         end, { buffer = bufnr, desc = "Format Document (Manual)" })
 
-        if format_on_save_filetypes[vim.bo[bufnr].filetype]
-            and client:supports_method("textDocument/formatting") then
-            vim.api.nvim_clear_autocmds({ group = format_sync_group, buffer = bufnr })
-            vim.api.nvim_create_autocmd("BufWritePre", {
-                group = format_sync_group,
-                buffer = bufnr,
-                callback = function()
-                    vim.lsp.buf.format({ bufnr = bufnr, async = false, timeout_ms = 5000,
-                        filter = function(c)
-                            return c.id == client.id
-                        end,
-                    })
-                end,
-            })
-        end
     end,
 })
 
@@ -254,8 +270,9 @@ vim.lsp.enable({
     "html",
     "jsonls",
     "ols",
-    "pyright",
+    "basedpyright",
     "roslyn",
+    "ruff",
     "rust_analyzer",
     "vtsls",
 })

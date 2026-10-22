@@ -99,7 +99,9 @@ Neovim uses built-in LSP and only enables servers whose executables are present.
 Install the relevant server for each language you use:
 
 - C/C++: `clangd`
-- Python: `pyright-langserver`
+- Python types, navigation, completion, and inlay hints:
+  `basedpyright-langserver`
+- Python linting, formatting, import organization, and fixes: `ruff`
 - C#: `roslyn-language-server`
 - Go: `gopls`
 - Rust: `rust-analyzer`
@@ -107,6 +109,17 @@ Install the relevant server for each language you use:
 - HTML/CSS/JSON: `vscode-html-language-server`, `vscode-css-language-server`,
   `vscode-json-language-server`
 - Odin: `ols`
+
+For the Python tools, one portable installation option is:
+
+```sh
+uv tool install basedpyright
+uv tool install ruff
+```
+
+BasedPyright starts in `standard` type-checking mode. Override that per project
+in `pyproject.toml` or `pyrightconfig.json` when a codebase is ready for stricter
+checking. Ruff formats Python on save; use `<leader>ca` for available code actions.
 
 Format-on-save is opt-in per language in `.config/nvim/init.lua`. Manual
 formatting remains available through `<leader>cf` when an attached LSP supports
