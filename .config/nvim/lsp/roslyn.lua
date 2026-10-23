@@ -1,6 +1,6 @@
 local diagnostic_group = vim.api.nvim_create_augroup("RoslynDiagnostics", { clear = true })
 local refresh_generation = {}
-local definition_namespace = vim.api.nvim_create_namespace("RoslynMethodDefinitions")
+local definition_namespace = vim.api.nvim_create_namespace("RoslynDefinitions")
 local definition_refresh_generation = {}
 
 local markdown_escapable = [[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]]
@@ -41,13 +41,14 @@ local function is_decompiled(bufname)
     return vim.fn.finddir(bufname:sub(1, marker_end), vim.uv.os_tmpdir()) ~= ""
 end
 
-local definition_kinds = {
-    [vim.lsp.protocol.SymbolKind.Function] = true,
-    [vim.lsp.protocol.SymbolKind.Method] = true,
-    [vim.lsp.protocol.SymbolKind.Constructor] = true,
+local definition_highlights = {
+    [vim.lsp.protocol.SymbolKind.Class] = "CSharpTypeDefinition",
+    [vim.lsp.protocol.SymbolKind.Function] = "CSharpMethodDefinition",
+    [vim.lsp.protocol.SymbolKind.Method] = "CSharpMethodDefinition",
+    [vim.lsp.protocol.SymbolKind.Constructor] = "CSharpMethodDefinition",
 }
 
-local function refresh_method_definitions(client, bufnr)
+local function refresh_definitions(client, bufnr)
     client:request("textDocument/documentSymbol", {
         textDocument = vim.lsp.util.make_text_document_params(bufnr),
     }, function(err, symbols)
@@ -59,7 +60,8 @@ local function refresh_method_definitions(client, bufnr)
 
         local function add_symbols(items)
             for _, symbol in ipairs(items or {}) do
-                if definition_kinds[symbol.kind] and symbol.selectionRange then
+                local highlight = definition_highlights[symbol.kind]
+                if highlight and symbol.selectionRange then
                     local range = symbol.selectionRange
                     local line = vim.api.nvim_buf_get_lines(
                         bufnr, range.start.line, range.start.line + 1, false
@@ -75,7 +77,7 @@ local function refresh_method_definitions(client, bufnr)
                         start_col, {
                             end_row = range["end"].line,
                             end_col = end_col,
-                            hl_group = "CSharpMethodDefinition",
+                            hl_group = highlight,
                             priority = 130,
                         })
                 end
@@ -94,7 +96,7 @@ local function schedule_definition_refresh(client, bufnr)
     vim.defer_fn(function()
         if definition_refresh_generation[bufnr] == generation
             and vim.api.nvim_buf_is_valid(bufnr) then
-            refresh_method_definitions(client, bufnr)
+            refresh_definitions(client, bufnr)
         end
     end, 200)
 end
@@ -326,7 +328,7 @@ return {
                 callback = function()
                     schedule_definition_refresh(client, bufnr)
                 end,
-                desc = "Highlight C# method definitions",
+                desc = "Highlight C# type and method definitions",
             })
         end
 
