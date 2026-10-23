@@ -301,6 +301,7 @@ for from, to in pairs(link_groups) do
 end
 
 vim.api.nvim_set_hl(0, "@lsp.typemod.function.definition", { bold = true })
+vim.api.nvim_set_hl(0, "@function.definition.python", { bold = true })
 vim.api.nvim_set_hl(0, "@lsp.type.operator", { fg = "#000000" })
 -- Let C# syntax groups such as csTodo show through Roslyn's whole-comment token.
 vim.api.nvim_set_hl(0, "@lsp.type.comment.cs", {})
