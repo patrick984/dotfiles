@@ -311,6 +311,7 @@ vim.api.nvim_set_hl(0, "@lsp.type.recordStruct.cs", { link = "Type" })
 vim.api.nvim_set_hl(0, "@lsp.type.extensionMethod.cs", { link = "Function" })
 vim.api.nvim_set_hl(0, "CSharpMethodDefinition", { bold = true })
 vim.api.nvim_set_hl(0, "CSharpTypeDefinition", { bold = true })
+vim.api.nvim_set_hl(0, "CSharpPropertyDefinition", { bold = true })
 
 -- GUI cursor config
 vim.opt.guicursor = 'n-v-c:block-Cursor,i-ci-ve:ver25-iCursor,r-cr-o:hor20'
