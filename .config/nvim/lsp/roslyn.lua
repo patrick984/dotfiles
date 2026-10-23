@@ -46,6 +46,7 @@ local definition_highlights = {
     [vim.lsp.protocol.SymbolKind.Function] = "CSharpMethodDefinition",
     [vim.lsp.protocol.SymbolKind.Method] = "CSharpMethodDefinition",
     [vim.lsp.protocol.SymbolKind.Constructor] = "CSharpMethodDefinition",
+    [vim.lsp.protocol.SymbolKind.Property] = "CSharpPropertyDefinition",
 }
 
 local function refresh_definitions(client, bufnr)
@@ -328,7 +329,7 @@ return {
                 callback = function()
                     schedule_definition_refresh(client, bufnr)
                 end,
-                desc = "Highlight C# type and method definitions",
+                desc = "Highlight C# type, method, and property definitions",
             })
         end
 
