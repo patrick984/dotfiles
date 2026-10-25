@@ -13,7 +13,6 @@ mkdir -p "$plugin_root"
 install_plugin() {
     local name="$1"
     local url="$2"
-    local branch="${3:-}"
     local destination="$plugin_root/$name"
 
     if [[ -e "$destination" && ! -d "$destination/.git" ]]; then
@@ -30,18 +29,54 @@ install_plugin() {
     fi
 
     printf 'install %s\n' "$name"
-    if [[ -n "$branch" ]]; then
-        git clone --filter=blob:none --branch "$branch" --single-branch \
-            "$url" "$destination"
-    else
-        git clone --filter=blob:none "$url" "$destination"
-    fi
+    git clone --filter=blob:none "$url" "$destination"
 }
 
-# Keep blink.cmp on its stable v1 branch. The other plugins track their default
-# branches and are updated with fast-forward-only pulls on subsequent runs.
-install_plugin "blink.cmp" \
-    "https://github.com/Saghen/blink.cmp.git" "v1"
+install_tagged_plugin() {
+    local name="$1"
+    local url="$2"
+    local tag_pattern="$3"
+    local tag_regex="$4"
+    local destination="$plugin_root/$name"
+    local candidate_tag
+    local latest_tag
+
+    if [[ -e "$destination" && ! -d "$destination/.git" ]]; then
+        printf 'cannot update %s: %s exists but is not a Git checkout\n' \
+            "$name" "$destination" >&2
+        return 1
+    fi
+
+    if [[ -d "$destination/.git" ]]; then
+        printf 'update %s release tags\n' "$name"
+        git -C "$destination" remote set-url origin "$url"
+    else
+        printf 'install %s from a release tag\n' "$name"
+        git clone --filter=blob:none --no-checkout "$url" "$destination"
+    fi
+
+    git -C "$destination" fetch --force --tags origin
+    while IFS= read -r candidate_tag; do
+        if [[ "$candidate_tag" =~ $tag_regex ]]; then
+            latest_tag="$candidate_tag"
+            break
+        fi
+    done < <(git -C "$destination" tag --list "$tag_pattern" \
+        --sort=-version:refname)
+    if [[ -z "$latest_tag" ]]; then
+        printf 'no %s release tag matching %s was found\n' \
+            "$name" "$tag_pattern" >&2
+        return 1
+    fi
+
+    git -C "$destination" checkout --detach "$latest_tag"
+    printf '%s selected release %s\n' "$name" "$latest_tag"
+}
+
+# Blink only downloads its prebuilt fuzzy matcher from an exact release tag.
+# The other plugins track their default branches with fast-forward-only pulls.
+install_tagged_plugin "blink.cmp" \
+    "https://github.com/Saghen/blink.cmp.git" "v1.*" '^v1\.[0-9]+\.[0-9]+$'
 install_plugin "friendly-snippets" \
     "https://github.com/rafamadriz/friendly-snippets.git"
 install_plugin "fzf-lua" \

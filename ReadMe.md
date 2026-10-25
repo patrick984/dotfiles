@@ -117,9 +117,10 @@ Install or update all optional Neovim plugins without a plugin manager:
 ```
 
 Plugins are cloned into `~/.config/nvim/pack/plugins/opt`. Rerunning the script
-updates each checkout with a fast-forward-only pull. `blink.cmp` stays on its
-stable `v1` branch; the remaining plugins track their default branches. The
-normal `install.sh` remains copy-only and never downloads plugins.
+selects the newest stable `v1.*` release tag for `blink.cmp`, allowing it to
+download its matching prebuilt fuzzy library. The remaining plugins track their
+default branches with fast-forward-only pulls. The normal `install.sh` remains
+copy-only and never downloads plugins.
 
 Install or update Helix from its latest official binary release:
 
