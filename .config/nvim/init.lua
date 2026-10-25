@@ -304,8 +304,7 @@ vim.api.nvim_set_hl(0, "@lsp.typemod.function.definition", { bold = true })
 vim.api.nvim_set_hl(0, "@function.definition.python", { bold = true })
 vim.api.nvim_set_hl(0, "@type.definition.python", { bold = true })
 vim.api.nvim_set_hl(0, "@lsp.type.operator", { fg = "#000000" })
--- Let pythonTodo highlight TODO/FIXME markers inside Treesitter comments.
-vim.api.nvim_set_hl(0, "@comment.python", {})
+vim.api.nvim_set_hl(0, "@comment.python", { link = "Comment" })
 -- Let C# syntax groups such as csTodo show through Roslyn's whole-comment token.
 vim.api.nvim_set_hl(0, "@lsp.type.comment.cs", {})
 vim.api.nvim_set_hl(0, "@lsp.type.recordClass.cs", { link = "Type" })
@@ -623,14 +622,73 @@ local treesitter_dir = vim.fn.expand("~/.config/nvim/pack/plugins/opt/nvim-trees
 if vim.fn.isdirectory(treesitter_dir) == 1 then
     local treesitter_loaded = pcall(vim.cmd, "packadd nvim-treesitter")
     if treesitter_loaded then
+        local python_todo_namespace = vim.api.nvim_create_namespace("PythonTodoMarkers")
+        local python_todo_group = vim.api.nvim_create_augroup("PythonTodoHighlight", { clear = true })
+        local python_todo_markers = { "TODO", "FIXME", "NOTE", "NOTES", "XXX" }
+
+        local function refresh_python_todos(bufnr)
+            vim.api.nvim_buf_clear_namespace(bufnr, python_todo_namespace, 0, -1)
+
+            local parser_ok, parser = pcall(vim.treesitter.get_parser, bufnr, "python")
+            local query_ok, query = pcall(vim.treesitter.query.parse, "python", "(comment) @comment")
+            if not parser_ok or not query_ok then
+                return
+            end
+
+            local tree = parser:parse()[1]
+            if not tree then
+                return
+            end
+
+            for _, node in query:iter_captures(tree:root(), bufnr, 0, -1) do
+                local start_row, start_col, end_row, end_col = node:range()
+                for row = start_row, end_row do
+                    local line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1] or ""
+                    local first_col = row == start_row and start_col or 0
+                    local last_col = row == end_row and end_col or #line
+
+                    for _, marker in ipairs(python_todo_markers) do
+                        local search_from = first_col + 1
+                        while search_from <= last_col do
+                            local match_start, match_end = line:find(
+                                "%f[%w_]" .. marker .. "%f[^%w_]", search_from
+                            )
+                            if not match_start or match_end > last_col then
+                                break
+                            end
+                            vim.api.nvim_buf_set_extmark(bufnr, python_todo_namespace,
+                                row, match_start - 1, {
+                                    end_col = match_end,
+                                    hl_group = "Todo",
+                                    priority = 130,
+                                })
+                            search_from = match_end + 1
+                        end
+                    end
+                end
+            end
+        end
+
         vim.api.nvim_create_autocmd("FileType", {
+            group = python_todo_group,
             pattern = "python",
             callback = function(args)
                 local ok, err = pcall(vim.treesitter.start, args.buf, "python")
                 if not ok then
                     vim.notify("Python Treesitter highlighting unavailable: " .. err,
                         vim.log.levels.WARN)
+                    return
                 end
+                refresh_python_todos(args.buf)
+
+                vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave", "TextChanged" }, {
+                    group = python_todo_group,
+                    buffer = args.buf,
+                    callback = function()
+                        refresh_python_todos(args.buf)
+                    end,
+                    desc = "Highlight TODO markers in Python comments",
+                })
             end,
             desc = "Enable structural Python highlighting",
         })
